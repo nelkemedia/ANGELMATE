@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  homeRegion    String?
+  skillLevel    String        @default("beginner")
+  avatarBase64  String?
+  role          String        @default("USER")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  catches      Catch[]
+  spots        Spot[]
+  comments     Comment[]
+  likes        Like[]
+  weeklyVotes  WeeklyVote[]
+  reports      Report[]
+}
+
+model Catch {
+  id              String       @id @default(cuid())
+  fishSpecies     String
+  weight          Float?
+  length          Float?
+  caughtAt        DateTime
+  waterName       String
+  latitude        Float?
+  longitude       Float?
+  bait            String?
+  technique       String?
+  weatherSnapshot String?
+  imageUrl        String?
+  notes           String?
+  isPublic        Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments        Comment[]
+  likes           Like[]
+  weeklyVotes     WeeklyVote[]
+
+  @@index([userId, caughtAt])
+  @@index([isPublic, createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  catchId   String
+  catch     Catch    @relation(fields: [catchId], references: [id], onDelete: Cascade)
+
+  @@index([catchId, createdAt])
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  catchId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  catch   Catch  @relation(fields: [catchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, catchId])
+}
+
+model WeeklyVote {
+  id        String   @id @default(cuid())
+  week      String   // ISO week string e.g. "2025-W17"
+  userId    String
+  catchId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  catch     Catch    @relation(fields: [catchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, week])
+  @@index([week])
+  @@index([catchId, week])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  senderName  String
+  senderEmail String
+  against     String
+  reason      String
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Spot {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  latitude      Float
+  longitude     Float
+  visibility    String   @default("private")
+  targetSpecies String   @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

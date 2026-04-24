@@ -1,0 +1,75 @@
+@baseUrl = http://localhost:3000
+@token = REPLACE_WITH_JWT
+
+### Health
+GET {{baseUrl}}/health
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Timo",
+  "email": "timo@example.com",
+  "password": "password123",
+  "homeRegion": "Berlin",
+  "skillLevel": "intermediate"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max@example.com",
+  "password": "password123"
+}
+
+### Me
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Create Catch
+POST {{baseUrl}}/api/catches
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fishSpecies": "Zander",
+  "weight": 2.7,
+  "length": 63,
+  "caughtAt": "2026-04-20T05:50:00.000Z",
+  "waterName": "Spree",
+  "latitude": 52.52,
+  "longitude": 13.405,
+  "bait": "Wobbler",
+  "technique": "Spinnfischen",
+  "notes": "Morgendämmerung an der Steinpackung",
+  "isPublic": true
+}
+
+### Get Catches
+GET {{baseUrl}}/api/catches
+Authorization: Bearer {{token}}
+
+### Create Spot
+POST {{baseUrl}}/api/spots
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Brückenkante",
+  "description": "Tiefer Bereich mit harter Kante",
+  "latitude": 52.521,
+  "longitude": 13.401,
+  "visibility": "private",
+  "targetSpecies": ["Zander", "Barsch"]
+}
+
+### Stats Overview
+GET {{baseUrl}}/api/stats/overview
+Authorization: Bearer {{token}}
+
+### Forecast
+GET {{baseUrl}}/api/forecast/today?temperature=14&pressure=1016&windSpeed=11&cloudCover=42
+Authorization: Bearer {{token}}
