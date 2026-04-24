@@ -23,14 +23,14 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="navbar-links">
-          <NavLink to="/" end>🏠 Dashboard</NavLink>
-          <NavLink to="/catches">📖 Fangbuch</NavLink>
-          <NavLink to="/spots">📍 Spots</NavLink>
-          <NavLink to="/forecast">🌤 Bissindex</NavLink>
-          <NavLink to="/community">🌍 Community</NavLink>
-          <NavLink to="/license">📋 Angelschein</NavLink>
-          <a href="https://www.hejfish.com/?gad_source=1&gad_campaignid=9541949489&gbraid=0AAAAAC0qlLk0B7q8mvReA6GRQGFnH4kPg&gclid=CjwKCAjwqazPBhALEiwAOuXqdNI9VcDRImuN9Rc8jecZpTiKPpzjPcJwZ_skxVLiPIeUx5O9SE4twxoCeYAQAvD_BwE" target="_blank" rel="noreferrer">🌐 Angelscheine online</a>
-          {user?.role === 'ADMIN' && <NavLink to="/admin">🛡 Admin</NavLink>}
+          <NavLink to="/" end><span className="nav-icon">🏠</span><span className="nav-label">Dashboard</span></NavLink>
+          <NavLink to="/catches"><span className="nav-icon">📖</span><span className="nav-label">Fangbuch</span></NavLink>
+          <NavLink to="/spots"><span className="nav-icon">📍</span><span className="nav-label">Spots</span></NavLink>
+          <NavLink to="/forecast"><span className="nav-icon">🌤</span><span className="nav-label">Bissindex</span></NavLink>
+          <NavLink to="/community"><span className="nav-icon">🌍</span><span className="nav-label">Community</span></NavLink>
+          <NavLink to="/license"><span className="nav-icon">📋</span><span className="nav-label">Angelschein</span></NavLink>
+          <a href="https://www.hejfish.com/?gad_source=1&gad_campaignid=9541949489&gbraid=0AAAAAC0qlLk0B7q8mvReA6GRQGFnH4kPg&gclid=CjwKCAjwqazPBhALEiwAOuXqdNI9VcDRImuN9Rc8jecZpTiKPpzjPcJwZ_skxVLiPIeUx5O9SE4twxoCeYAQAvD_BwE" target="_blank" rel="noreferrer"><span className="nav-icon">🌐</span><span className="nav-label">Angelscheine</span></a>
+          {user?.role === 'ADMIN' && <NavLink to="/admin"><span className="nav-icon">🛡</span><span className="nav-label">Admin</span></NavLink>}
         </div>
 
         <div className="navbar-user navbar-user-desktop">

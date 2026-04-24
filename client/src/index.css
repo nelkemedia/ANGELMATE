@@ -50,9 +50,9 @@ input, select, textarea { font: inherit; }
 
 /* ── Navbar ── */
 .navbar {
-  display: flex; align-items: center; gap: 1rem;
+  display: flex; align-items: center; gap: 1.25rem;
   background: linear-gradient(135deg, #14532d 0%, #166534 60%, #15803d 100%);
-  color: white; padding: 0 1.5rem; height: 60px;
+  color: white; padding: 0.5rem 2rem; min-height: 72px;
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 2px 12px rgba(0,0,0,.25);
 }
@@ -61,21 +61,32 @@ input, select, textarea { font: inherit; }
   letter-spacing: -0.5px;
 }
 .navbar-brand span { font-size: 1.4rem; }
-.navbar-links { display: flex; gap: 0.25rem; flex: 1; }
+.navbar-links { display: flex; gap: 0.35rem; flex: 1; }
 .navbar-links a {
-  color: rgba(255,255,255,.75); padding: 0.45rem 0.9rem;
-  border-radius: 8px; font-size: 0.9rem; font-weight: 500;
-  transition: all .2s; letter-spacing: 0.1px;
+  display: flex; flex-direction: row; align-items: center; gap: 0.45rem;
+  color: rgba(255,255,255,.75); padding: 0.55rem 1rem;
+  border-radius: 10px; font-weight: 500;
+  transition: all .2s; text-decoration: none; white-space: nowrap;
 }
-.navbar-links a:hover { background: rgba(255,255,255,.15); color: white; text-decoration: none; transform: translateY(-1px); }
+.nav-icon  { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+.nav-label { font-size: 0.85rem; }
+/* Schmaler Desktop: Icon über Label */
+@media (max-width: 1180px) and (min-width: 769px) {
+  .navbar-links a {
+    flex-direction: column; gap: 0.1rem;
+    padding: 0.5rem 0.75rem; text-align: center;
+  }
+  .nav-label { font-size: 0.72rem; }
+}
+.navbar-links a:hover { background: rgba(255,255,255,.15); color: white; transform: translateY(-1px); }
 .navbar-links a.active {
   background: rgba(255,255,255,.22); color: white;
   font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 .navbar-user, .navbar-user-desktop { display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; }
 .navbar-user .user-name {
-  background: rgba(255,255,255,.15); padding: 0.3rem 0.75rem;
-  border-radius: 999px; font-weight: 600;
+  background: rgba(255,255,255,.15); padding: 0.35rem 0.9rem;
+  border-radius: 10px; font-weight: 600;
 }
 .btn-logout {
   background: rgba(255,255,255,.12); color: rgba(255,255,255,.9);
@@ -241,8 +252,7 @@ input, select, textarea { font: inherit; }
 
 /* ── Dashboard Hero ── */
 .dashboard-hero {
-  position: relative; border-radius: var(--radius-lg);
-  overflow: hidden; margin-bottom: 2rem; height: 240px;
+  position: relative; overflow: hidden; margin-bottom: 2rem; height: 240px;
   background: var(--photo-dashboard) center/cover no-repeat;
   box-shadow: var(--shadow-lg);
 }
@@ -346,7 +356,7 @@ input, select, textarea { font: inherit; }
 
 /* ── Photo section banner ── */
 .section-photo-banner {
-  position: relative; border-radius: var(--radius-lg); overflow: hidden;
+  position: relative; overflow: hidden;
   height: 160px; margin-bottom: 1.5rem; background-size: cover; background-position: center;
   box-shadow: var(--shadow-md);
 }
@@ -444,7 +454,7 @@ input, select, textarea { font: inherit; }
 
 /* ── Forecast ── */
 .forecast-photo-banner {
-  position: relative; border-radius: var(--radius-lg); overflow: hidden;
+  position: relative; overflow: hidden;
   height: 200px; margin-bottom: 2rem;
   background: var(--photo-forecast) center/cover no-repeat;
   box-shadow: var(--shadow-lg);
@@ -944,7 +954,7 @@ input, select, textarea { font: inherit; }
 /* ── Mobile (≤ 640px) ── */
 @media (max-width: 640px) {
   /* Navbar */
-  .navbar { padding: 0 1rem; height: 54px; }
+  .navbar { padding: 0 1rem; min-height: 54px; }
   .navbar-links { display: none; }
   .navbar-user-desktop { display: none; }
   .hamburger { display: flex; }
@@ -1856,8 +1866,9 @@ body.has-modal { overflow: hidden; }
 
 /* ── 5. Safe area insets (iPhone notch / home bar) ── */
 .navbar {
-  padding-left:  max(1.5rem, env(safe-area-inset-left));
-  padding-right: max(1.5rem, env(safe-area-inset-right));
+  padding-top:   env(safe-area-inset-top);
+  padding-left:  max(2rem, env(safe-area-inset-left));
+  padding-right: max(2rem, env(safe-area-inset-right));
 }
 .app-footer {
   padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
