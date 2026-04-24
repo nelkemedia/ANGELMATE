@@ -49,7 +49,10 @@ export const register = catchAsync(async (req, res) => {
 export const login = catchAsync(async (req, res) => {
   const data = loginSchema.parse(req.body);
 
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  const user = await prisma.user.findUnique({
+    where: { email: data.email },
+    include: { userStatus: { select: { status: true } } }
+  });
   if (!user) {
     throw new AppError('Invalid credentials', 401);
   }
@@ -57,6 +60,10 @@ export const login = catchAsync(async (req, res) => {
   const isValid = await bcrypt.compare(data.password, user.passwordHash);
   if (!isValid) {
     throw new AppError('Invalid credentials', 401);
+  }
+
+  if (user.userStatus?.status === 'INACTIVE') {
+    throw new AppError('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator.', 403);
   }
 
   const token = signToken({ userId: user.id });

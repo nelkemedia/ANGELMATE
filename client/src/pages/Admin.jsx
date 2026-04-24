@@ -141,9 +141,9 @@ function ReportsTab() {
 // ── Users Tab ─────────────────────────────────────────────────────────────────
 
 function UsersTab() {
-  const [users,   setUsers]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [roleLoading, setRoleLoading] = useState(null);
+  const [users,      setUsers]      = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [actionBusy, setActionBusy] = useState(null); // userId currently loading
 
   useEffect(() => {
     api.admin.getUsers()
@@ -152,24 +152,44 @@ function UsersTab() {
       .finally(() => setLoading(false));
   }, []);
 
+  function isActive(u) {
+    return !u.userStatus || u.userStatus.status === 'ACTIVE';
+  }
+
+  async function handleStatusToggle(u) {
+    const newStatus = isActive(u) ? 'INACTIVE' : 'ACTIVE';
+    const label     = newStatus === 'INACTIVE' ? 'deaktivieren' : 'aktivieren';
+    if (!window.confirm(`Konto von "${u.name}" wirklich ${label}?`)) return;
+    setActionBusy(u.id);
+    try {
+      await api.admin.setUserStatus(u.id, newStatus);
+      setUsers((prev) => prev.map((x) =>
+        x.id === u.id ? { ...x, userStatus: { status: newStatus } } : x
+      ));
+    } catch (e) { alert(e.message); }
+    finally { setActionBusy(null); }
+  }
+
   async function handleRoleToggle(u) {
     const newRole = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
     const label   = newRole === 'ADMIN' ? 'Admin' : 'User';
     if (!window.confirm(`Rolle von "${u.name}" auf ${label} ändern?`)) return;
-    setRoleLoading(u.id);
+    setActionBusy(u.id);
     try {
       const d = await api.admin.updateUserRole(u.id, newRole);
       setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, role: d.user.role } : x));
     } catch (e) { alert(e.message); }
-    finally { setRoleLoading(null); }
+    finally { setActionBusy(null); }
   }
 
-  async function handleDelete(id, name) {
-    if (!window.confirm(`Nutzer "${name}" wirklich löschen? Alle Fänge, Spots und Kommentare werden unwiderruflich entfernt.`)) return;
+  async function handleDelete(u) {
+    if (!window.confirm(`Nutzer "${u.name}" wirklich löschen?\n\nAlle Fänge, Spots und Kommentare werden unwiderruflich entfernt.`)) return;
+    setActionBusy(u.id);
     try {
-      await api.admin.deleteUser(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
+      await api.admin.deleteUser(u.id);
+      setUsers((prev) => prev.filter((x) => x.id !== u.id));
     } catch (e) { alert(e.message); }
+    finally { setActionBusy(null); }
   }
 
   if (loading) return <div className="loading">Lade Nutzer…</div>;
@@ -178,13 +198,16 @@ function UsersTab() {
 
   return (
     <div className="admin-section">
-      <p className="admin-count" style={{ marginBottom: '1rem' }}>{users.length} Nutzer registriert</p>
+      <p className="admin-count" style={{ marginBottom: '1rem' }}>
+        {users.length} Nutzer · {users.filter(u => !isActive(u)).length} deaktiviert
+      </p>
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>E-Mail</th>
+              <th>Status</th>
               <th>Rolle</th>
               <th>Level</th>
               <th>Fänge</th>
@@ -194,36 +217,56 @@ function UsersTab() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td data-label="Name"><strong>{u.name}</strong></td>
-                <td data-label="E-Mail"><a href={`mailto:${u.email}`} className="app-footer-link">{u.email}</a></td>
-                <td data-label="Rolle">
-                  <span className={`admin-badge ${u.role === 'ADMIN' ? 'admin-badge-admin' : 'admin-badge-user'}`}>
-                    {u.role === 'ADMIN' ? '🛡 Admin' : '👤 User'}
-                  </span>
-                </td>
-                <td data-label="Level">{SKILL[u.skillLevel] ?? u.skillLevel}</td>
-                <td data-label="Fänge">{u._count.catches}</td>
-                <td data-label="Spots">{u._count.spots}</td>
-                <td data-label="Dabei seit">{new Date(u.createdAt).toLocaleDateString('de-DE')}</td>
-                <td data-label="" className="admin-actions-cell">
-                  <button
-                    className={`admin-btn-sm ${u.role === 'ADMIN' ? 'btn-ghost' : 'btn-primary'}`}
-                    onClick={() => handleRoleToggle(u)}
-                    disabled={roleLoading === u.id}
-                    title={u.role === 'ADMIN' ? 'Zu User degradieren' : 'Zu Admin befördern'}
-                  >
-                    {roleLoading === u.id ? '…' : u.role === 'ADMIN' ? '👤 User' : '🛡 Admin'}
-                  </button>
-                  {u.role !== 'ADMIN' && (
-                    <button className="btn-danger admin-btn-sm" onClick={() => handleDelete(u.id, u.name)}>
+            {users.map((u) => {
+              const active = isActive(u);
+              const busy   = actionBusy === u.id;
+              return (
+                <tr key={u.id} className={!active ? 'admin-row-inactive' : ''}>
+                  <td data-label="Name"><strong>{u.name}</strong></td>
+                  <td data-label="E-Mail"><a href={`mailto:${u.email}`} className="app-footer-link">{u.email}</a></td>
+                  <td data-label="Status">
+                    <span className={`admin-badge ${active ? 'admin-badge-ok' : 'admin-badge-warn'}`}>
+                      {active ? '✅ Aktiv' : '🔴 Inaktiv'}
+                    </span>
+                  </td>
+                  <td data-label="Rolle">
+                    <span className={`admin-badge ${u.role === 'ADMIN' ? 'admin-badge-admin' : 'admin-badge-user'}`}>
+                      {u.role === 'ADMIN' ? '🛡 Admin' : '👤 User'}
+                    </span>
+                  </td>
+                  <td data-label="Level">{SKILL[u.skillLevel] ?? u.skillLevel}</td>
+                  <td data-label="Fänge">{u._count.catches}</td>
+                  <td data-label="Spots">{u._count.spots}</td>
+                  <td data-label="Dabei seit">{new Date(u.createdAt).toLocaleDateString('de-DE')}</td>
+                  <td data-label="" className="admin-actions-cell">
+                    <button
+                      className={`admin-btn-sm ${active ? 'btn-ghost' : 'btn-primary'}`}
+                      onClick={() => handleStatusToggle(u)}
+                      disabled={busy}
+                      title={active ? 'Konto deaktivieren' : 'Konto aktivieren'}
+                    >
+                      {busy ? '…' : active ? '🔴 Sperren' : '✅ Aktivieren'}
+                    </button>
+                    <button
+                      className={`admin-btn-sm ${u.role === 'ADMIN' ? 'btn-ghost' : 'btn-primary'}`}
+                      onClick={() => handleRoleToggle(u)}
+                      disabled={busy}
+                      title={u.role === 'ADMIN' ? 'Zu User degradieren' : 'Zu Admin befördern'}
+                    >
+                      {busy ? '…' : u.role === 'ADMIN' ? '👤 User' : '🛡 Admin'}
+                    </button>
+                    <button
+                      className="btn-danger admin-btn-sm"
+                      onClick={() => handleDelete(u)}
+                      disabled={busy}
+                      title="Nutzer löschen"
+                    >
                       🗑
                     </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

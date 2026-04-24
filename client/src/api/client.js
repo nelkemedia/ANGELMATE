@@ -16,7 +16,11 @@ async function request(path, options = {}) {
   });
   if (res.status === 204) return null;
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Fehler beim API-Aufruf');
+  if (!res.ok) {
+    const err = new Error(data.message || 'Fehler beim API-Aufruf');
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -62,9 +66,10 @@ export const api = {
     getReports:    ()   => request('/admin/reports'),
     resolveReport: (id) => request(`/admin/reports/${id}/resolve`, { method: 'PATCH' }),
     deleteReport:  (id) => request(`/admin/reports/${id}`, { method: 'DELETE' }),
-    getUsers:      ()          => request('/admin/users'),
-    updateUserRole:(id, role) => request(`/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
-    deleteUser:    (id)        => request(`/admin/users/${id}`, { method: 'DELETE' })
+    getUsers:       ()            => request('/admin/users'),
+    setUserStatus:  (id, status)  => request(`/admin/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    updateUserRole: (id, role)    => request(`/admin/users/${id}/role`,   { method: 'PATCH', body: JSON.stringify({ role }) }),
+    deleteUser:     (id)          => request(`/admin/users/${id}`,        { method: 'DELETE' })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>

@@ -25,6 +25,15 @@ model User {
   likes        Like[]
   weeklyVotes  WeeklyVote[]
   reports      Report[]
+  userStatus   UserStatus?
+}
+
+model UserStatus {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String   @default("ACTIVE")   // "ACTIVE" | "INACTIVE"
+  updatedAt DateTime @updatedAt
 }
 
 model Catch {

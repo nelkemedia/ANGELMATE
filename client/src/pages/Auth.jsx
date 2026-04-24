@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Auth() {
   const [mode, setMode] = useState('login');
-  const [error, setError] = useState('');
+  const [error, setError]     = useState('');
+  const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Auth() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setBlocked(false);
     setLoading(true);
     try {
       if (mode === 'login') {
@@ -32,6 +34,9 @@ export default function Auth() {
       }
       navigate('/');
     } catch (err) {
+      if (err.status === 403) {
+        setBlocked(true);
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -64,10 +69,10 @@ export default function Auth() {
           </p>
 
           <div className="auth-tabs">
-            <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); }}>
+            <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); setBlocked(false); }}>
               Anmelden
             </button>
-            <button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setError(''); }}>
+            <button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setError(''); setBlocked(false); }}>
               Registrieren
             </button>
           </div>
@@ -102,7 +107,16 @@ export default function Auth() {
               <input type="password" value={form.password} onChange={set('password')} required minLength={8} placeholder="Mindestens 8 Zeichen" />
             </div>
 
-            {error && <div className="error-msg">⚠️ {error}</div>}
+            {blocked && (
+              <div className="error-msg error-msg-blocked">
+                <div className="error-msg-blocked-icon">🚫</div>
+                <div>
+                  <strong>Konto gesperrt</strong>
+                  <p>{error}</p>
+                </div>
+              </div>
+            )}
+            {!blocked && error && <div className="error-msg">⚠️ {error}</div>}
 
             <button type="submit" className="btn-primary btn-full" disabled={loading}>
               {loading ? '⏳ Bitte warten…' : mode === 'login' ? '🎣 Anmelden & Angeln!' : '🚀 Konto erstellen'}

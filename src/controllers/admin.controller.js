@@ -44,10 +44,21 @@ export const getUsers = catchAsync(async (_req, res) => {
     select: {
       id: true, name: true, email: true, role: true,
       skillLevel: true, homeRegion: true, createdAt: true,
+      userStatus: { select: { status: true } },
       _count: { select: { catches: true, spots: true, comments: true } }
     },
     orderBy: { createdAt: 'asc' }
   });
+
+  // Auto-create ACTIVE status for users without a UserStatus entry
+  const missing = users.filter((u) => !u.userStatus).map((u) => ({ userId: u.id, status: 'ACTIVE' }));
+  if (missing.length > 0) {
+    await prisma.userStatus.createMany({ data: missing, skipDuplicates: true });
+    for (const u of users) {
+      if (!u.userStatus) u.userStatus = { status: 'ACTIVE' };
+    }
+  }
+
   res.json({ users });
 });
 
@@ -59,6 +70,22 @@ export const deleteUser = catchAsync(async (req, res) => {
     throw new AppError('User not found', 404);
   });
   res.status(204).end();
+});
+
+export const setUserStatus = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (id === req.user.id) throw new AppError('Du kannst deinen eigenen Status nicht ändern.', 400);
+  if (!['ACTIVE', 'INACTIVE'].includes(status)) throw new AppError('Ungültiger Status. Erlaubt: ACTIVE, INACTIVE', 400);
+
+  await prisma.userStatus.upsert({
+    where:  { userId: id },
+    update: { status },
+    create: { userId: id, status }
+  });
+
+  res.json({ userId: id, status });
 });
 
 export const updateUserRole = catchAsync(async (req, res) => {
