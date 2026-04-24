@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 
 export default function Admin() {
@@ -138,12 +138,62 @@ function ReportsTab() {
   );
 }
 
+// ── Action Dropdown ───────────────────────────────────────────────────────────
+
+function ActionDropdown({ u, busy, onStatus, onRole, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const active = !u.userStatus || u.userStatus.status === 'ACTIVE';
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  function act(fn) {
+    setOpen(false);
+    fn();
+  }
+
+  return (
+    <div className="user-action-menu" ref={ref}>
+      <button
+        className="user-action-trigger"
+        onClick={() => setOpen((o) => !o)}
+        disabled={busy}
+        aria-label="Aktionen"
+      >
+        {busy ? '…' : '⋯'}
+      </button>
+      {open && (
+        <div className="user-action-items">
+          <button className="user-action-item" onClick={() => act(onStatus)}>
+            {active ? '🔴 Konto sperren' : '✅ Konto aktivieren'}
+          </button>
+          <button className="user-action-item" onClick={() => act(onRole)}>
+            {u.role === 'ADMIN' ? '👤 Zu User degradieren' : '🛡 Zu Admin befördern'}
+          </button>
+          <div className="user-action-divider" />
+          <button className="user-action-item user-action-item--danger" onClick={() => act(onDelete)}>
+            🗑 Nutzer löschen
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Users Tab ─────────────────────────────────────────────────────────────────
 
 function UsersTab() {
   const [users,      setUsers]      = useState([]);
   const [loading,    setLoading]    = useState(true);
-  const [actionBusy, setActionBusy] = useState(null); // userId currently loading
+  const [actionBusy, setActionBusy] = useState(null);
+  const [search,     setSearch]     = useState('');
 
   useEffect(() => {
     api.admin.getUsers()
@@ -196,11 +246,29 @@ function UsersTab() {
 
   const SKILL = { beginner: '🐣 Anfänger', intermediate: '🎯 Fortgeschritten', advanced: '🏆 Profi' };
 
+  const q = search.trim().toLowerCase();
+  const visible = q
+    ? users.filter((u) => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
+    : users;
+
   return (
     <div className="admin-section">
-      <p className="admin-count" style={{ marginBottom: '1rem' }}>
-        {users.length} Nutzer · {users.filter(u => !isActive(u)).length} deaktiviert
-      </p>
+      <div className="admin-users-toolbar">
+        <span className="admin-count">
+          {users.length} Nutzer · {users.filter(u => !isActive(u)).length} deaktiviert
+        </span>
+        <div className="admin-search-wrap">
+          <span className="admin-search-icon">🔍</span>
+          <input
+            className="admin-search"
+            type="search"
+            placeholder="Name oder E-Mail suchen…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
@@ -217,9 +285,11 @@ function UsersTab() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u) => {
+            {visible.length === 0 && (
+              <tr><td colSpan={9} className="admin-empty">Keine Nutzer gefunden.</td></tr>
+            )}
+            {visible.map((u) => {
               const active = isActive(u);
-              const busy   = actionBusy === u.id;
               return (
                 <tr key={u.id} className={!active ? 'admin-row-inactive' : ''}>
                   <td data-label="Name"><strong>{u.name}</strong></td>
@@ -238,31 +308,14 @@ function UsersTab() {
                   <td data-label="Fänge">{u._count.catches}</td>
                   <td data-label="Spots">{u._count.spots}</td>
                   <td data-label="Dabei seit">{new Date(u.createdAt).toLocaleDateString('de-DE')}</td>
-                  <td data-label="" className="admin-actions-cell">
-                    <button
-                      className={`admin-btn-sm ${active ? 'btn-ghost' : 'btn-primary'}`}
-                      onClick={() => handleStatusToggle(u)}
-                      disabled={busy}
-                      title={active ? 'Konto deaktivieren' : 'Konto aktivieren'}
-                    >
-                      {busy ? '…' : active ? '🔴 Sperren' : '✅ Aktivieren'}
-                    </button>
-                    <button
-                      className={`admin-btn-sm ${u.role === 'ADMIN' ? 'btn-ghost' : 'btn-primary'}`}
-                      onClick={() => handleRoleToggle(u)}
-                      disabled={busy}
-                      title={u.role === 'ADMIN' ? 'Zu User degradieren' : 'Zu Admin befördern'}
-                    >
-                      {busy ? '…' : u.role === 'ADMIN' ? '👤 User' : '🛡 Admin'}
-                    </button>
-                    <button
-                      className="btn-danger admin-btn-sm"
-                      onClick={() => handleDelete(u)}
-                      disabled={busy}
-                      title="Nutzer löschen"
-                    >
-                      🗑
-                    </button>
+                  <td>
+                    <ActionDropdown
+                      u={u}
+                      busy={actionBusy === u.id}
+                      onStatus={() => handleStatusToggle(u)}
+                      onRole={()   => handleRoleToggle(u)}
+                      onDelete={()  => handleDelete(u)}
+                    />
                   </td>
                 </tr>
               );
