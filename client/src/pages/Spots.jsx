@@ -206,7 +206,7 @@ export default function Spots() {
 
   return (
     <div>
-      <div className="section-photo-banner" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1710273330112-1461aa903ac7?w=1200&q=80&auto=format&fit=crop)' }}>
+      <div className="section-photo-banner section-photo-banner--spots">
         <div className="section-photo-banner-text">
           <h2>📍 Angelspots</h2>
           <p>Deine Geheimplätze — und die der Community.</p>

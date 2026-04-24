@@ -15,9 +15,7 @@ export default function Community() {
 
   return (
     <div>
-      <div className="section-photo-banner" style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1566528226211-090651acf06c?w=1200&q=80&auto=format&fit=crop)'
-      }}>
+      <div className="section-photo-banner section-photo-banner--community">
         <div className="section-photo-banner-text">
           <h2>🌍 Community</h2>
           <p>Fänge teilen · abstimmen · messen</p>

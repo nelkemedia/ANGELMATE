@@ -145,7 +145,7 @@ export default function Catches() {
 
   return (
     <div>
-      <div className="section-photo-banner" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1689709105115-e11810b6c425?w=1200&q=80&auto=format&fit=crop)' }}>
+      <div className="section-photo-banner section-photo-banner--catches">
         <div className="section-photo-banner-text">
           <h2>📖 Fangbuch</h2>
           <p>Jeder Fang ist eine Geschichte wert.</p>

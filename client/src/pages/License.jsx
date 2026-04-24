@@ -50,10 +50,7 @@ export default function License() {
   return (
     <div>
       {/* Banner */}
-      <div
-        className="section-photo-banner"
-        style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1551131618-3f0a5cf594b4?w=1200&q=80&auto=format&fit=crop)' }}
-      >
+      <div className="section-photo-banner section-photo-banner--license">
         <div className="section-photo-banner-text">
           <h2>📋 Angelschein online</h2>
           <p>Vorbereitung · Prüfung · Lizenz — alles digital</p>
