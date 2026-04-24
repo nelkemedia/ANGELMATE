@@ -1879,8 +1879,8 @@ body.has-modal { overflow: hidden; }
 .mobile-drawer {
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
-.mobile-overlay {
-  padding-top: env(safe-area-inset-top);
+.mobile-drawer-user {
+  padding-top: calc(1.25rem + env(safe-area-inset-top));
 }
 
 /* ── 6. Touch targets: min 44px ── */
