@@ -4,7 +4,7 @@ import { requireAdmin } from '../middleware/admin.middleware.js';
 import {
   getReports, resolveReport, deleteReport,
   getUsers, setUserStatus, updateUserRole, deleteUser, sendUserPasswordReset,
-  getSmtp, saveSmtp
+  getSmtp, saveSmtp, testSmtp
 } from '../controllers/admin.controller.js';
 
 const router = Router();
@@ -21,7 +21,8 @@ router.patch('/users/:id/role',           updateUserRole);
 router.post('/users/:id/reset-password',  sendUserPasswordReset);
 router.delete('/users/:id',               deleteUser);
 
-router.get('/smtp',  getSmtp);
-router.put('/smtp',  saveSmtp);
+router.get('/smtp',       getSmtp);
+router.put('/smtp',       saveSmtp);
+router.post('/smtp/test', testSmtp);
 
 export default router;

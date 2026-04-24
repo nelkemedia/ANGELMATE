@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import prisma from '../config/prisma.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { AppError } from '../utils/app-error.js';
-import { sendPasswordResetMail } from '../utils/mailer.js';
+import { sendPasswordResetMail, testSmtpConnection } from '../utils/mailer.js';
 
 // ── Reports ──────────────────────────────────────────────────────────────────
 
@@ -139,6 +139,24 @@ export const saveSmtp = catchAsync(async (req, res) => {
     : await prisma.smtpSettings.create({ data: { ...data, password: data.password ?? '' } });
 
   res.json({ settings: { ...s, password: s.password ? MASK : '' } });
+});
+
+export const testSmtp = catchAsync(async (req, res) => {
+  const { host, port, user, password, fromName, fromAddress, secure } = req.body;
+
+  // Resolve masked password from DB
+  let realPassword = password;
+  if (!password || password === MASK) {
+    const existing = await prisma.smtpSettings.findFirst();
+    realPassword = existing?.password || '';
+  }
+
+  await testSmtpConnection({
+    host, port, user, password: realPassword, fromName, fromAddress, secure,
+    toEmail: req.user.email
+  });
+
+  res.json({ message: `Test-Mail erfolgreich an ${req.user.email} gesendet.` });
 });
 
 export const updateUserRole = catchAsync(async (req, res) => {

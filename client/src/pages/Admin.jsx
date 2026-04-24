@@ -367,11 +367,12 @@ const MASK = '••••••••';
 
 function SmtpTab() {
   const empty = { host: '', port: 587, user: '', password: '', fromName: 'AngelMate', fromAddress: '', secure: false };
-  const [form,    setForm]    = useState(empty);
-  const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
-  const [saved,   setSaved]   = useState(false);
-  const [error,   setError]   = useState('');
+  const [form,       setForm]       = useState(empty);
+  const [loading,    setLoading]    = useState(true);
+  const [saving,     setSaving]     = useState(false);
+  const [testing,    setTesting]    = useState(false);
+  const [saveMsg,    setSaveMsg]    = useState(null); // { ok, text }
+  const [testMsg,    setTestMsg]    = useState(null); // { ok, text }
 
   useEffect(() => {
     api.admin.getSmtp()
@@ -382,21 +383,40 @@ function SmtpTab() {
 
   function set(field) {
     return (e) => {
-      setSaved(false);
+      setSaveMsg(null);
       const val = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-      setForm((f) => ({ ...f, [field]: val }));
+      setForm((f) => {
+        const update = { ...f, [field]: val };
+        if (field === 'port') {
+          const p = parseInt(val);
+          if (p === 465) update.secure = true;
+          else if (p === 587 || p === 25) update.secure = false;
+        }
+        return update;
+      });
     };
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(''); setSaving(true);
+    setSaveMsg(null); setSaving(true);
     try {
       const d = await api.admin.saveSmtp(form);
       setForm(d.settings);
-      setSaved(true);
-    } catch (err) { setError(err.message); }
-    finally { setSaving(false); }
+      setSaveMsg({ ok: true, text: 'Einstellungen gespeichert.' });
+    } catch (err) {
+      setSaveMsg({ ok: false, text: err.message });
+    } finally { setSaving(false); }
+  }
+
+  async function handleTest() {
+    setTestMsg(null); setTesting(true);
+    try {
+      const d = await api.admin.testSmtp(form);
+      setTestMsg({ ok: true, text: d.message });
+    } catch (err) {
+      setTestMsg({ ok: false, text: err.message });
+    } finally { setTesting(false); }
   }
 
   if (loading) return <div className="loading">Lade SMTP-Einstellungen…</div>;
@@ -410,14 +430,23 @@ function SmtpTab() {
         </p>
 
         <form onSubmit={handleSubmit} className="smtp-form">
-          <div className="smtp-row">
-            <div className="field">
+
+          {/* Host + Port + SSL in einer Gruppe */}
+          <div className="smtp-row smtp-row-3">
+            <div className="field" style={{ flex: 2 }}>
               <label>SMTP Host</label>
               <input value={form.host} onChange={set('host')} placeholder="mail.gmx.net" />
             </div>
-            <div className="field smtp-field-port">
-              <label>Port</label>
+            <div className="field">
+              <label>Port <span className="smtp-port-hint">587 STARTTLS · 465 SSL</span></label>
               <input type="number" value={form.port} onChange={set('port')} min={1} max={65535} />
+            </div>
+            <div className="field smtp-field-ssl">
+              <label>Verschlüsselung</label>
+              <label className="smtp-checkbox-label">
+                <input type="checkbox" checked={form.secure} onChange={set('secure')} />
+                SSL/TLS (statt STARTTLS)
+              </label>
             </div>
           </div>
 
@@ -430,7 +459,7 @@ function SmtpTab() {
               <label>Passwort</label>
               <input
                 type="password" value={form.password} onChange={set('password')}
-                placeholder={form.password === MASK ? 'gesetzt (leer lassen zum Beibehalten)' : 'SMTP-Passwort'}
+                placeholder={form.password === MASK ? 'gesetzt – leer lassen zum Beibehalten' : 'SMTP-Passwort'}
                 autoComplete="new-password"
               />
             </div>
@@ -447,17 +476,26 @@ function SmtpTab() {
             </div>
           </div>
 
-          <label className="smtp-checkbox-label">
-            <input type="checkbox" checked={form.secure} onChange={set('secure')} />
-            SSL/TLS verwenden (Port 465)
-          </label>
+          {saveMsg && (
+            <div className={saveMsg.ok ? 'smtp-msg smtp-msg-ok' : 'smtp-msg smtp-msg-err'}>
+              {saveMsg.ok ? '✅' : '⚠️'} {saveMsg.text}
+            </div>
+          )}
 
-          {error  && <div className="error-msg">⚠️ {error}</div>}
-          {saved  && <div className="smtp-saved">✅ Einstellungen gespeichert.</div>}
+          <div className="smtp-actions">
+            <button type="submit" className="btn-primary" disabled={saving}>
+              {saving ? '⏳ Speichern…' : '💾 Einstellungen speichern'}
+            </button>
+            <button type="button" className="btn-ghost smtp-test-btn" onClick={handleTest} disabled={testing || saving}>
+              {testing ? '⏳ Sende…' : '📨 Test-Mail senden'}
+            </button>
+          </div>
 
-          <button type="submit" className="btn-primary" disabled={saving}>
-            {saving ? '⏳ Speichern…' : '💾 Einstellungen speichern'}
-          </button>
+          {testMsg && (
+            <div className={testMsg.ok ? 'smtp-msg smtp-msg-ok' : 'smtp-msg smtp-msg-err'}>
+              {testMsg.ok ? '✅' : '⚠️'} {testMsg.text}
+            </div>
+          )}
         </form>
       </div>
     </div>

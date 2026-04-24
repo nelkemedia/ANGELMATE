@@ -1,11 +1,18 @@
 import nodemailer from 'nodemailer';
 import prisma from '../config/prisma.js';
 
+function resolveSecure(port, secure) {
+  const p = parseInt(port);
+  if (p === 465) return true;
+  if (p === 587 || p === 25) return false;
+  return Boolean(secure);
+}
+
 async function createTransport() {
   const s = await prisma.smtpSettings.findFirst();
   if (s?.host && s?.user && s?.password) {
     return nodemailer.createTransport({
-      host: s.host, port: s.port, secure: s.secure,
+      host: s.host, port: s.port, secure: resolveSecure(s.port, s.secure),
       auth: { user: s.user, pass: s.password }
     });
   }
@@ -38,6 +45,26 @@ export async function sendReportMail({ senderName, senderEmail, against, reason 
     text
   });
   return true;
+}
+
+export async function testSmtpConnection({ host, port, user, password, fromName, fromAddress, secure, toEmail }) {
+  if (!host || !user || !password)
+    throw new Error('Bitte Host, Benutzername und Passwort angeben.');
+
+  const resolvedPort = parseInt(port) || 587;
+  const transport = nodemailer.createTransport({
+    host, port: resolvedPort, secure: resolveSecure(resolvedPort, secure),
+    auth: { user, pass: password }
+  });
+
+  await transport.verify();
+
+  const from = `"${fromName || 'AngelMate'}" <${fromAddress || user}>`;
+  await transport.sendMail({
+    from, to: toEmail,
+    subject: '[AngelMate] SMTP Test erfolgreich ✅',
+    text: `Die SMTP-Konfiguration funktioniert.\n\nHost: ${host}:${port}\nBenutzer: ${user}\nSSL/TLS: ${secure ? 'Ja' : 'Nein'}`
+  });
 }
 
 export async function sendPasswordResetMail({ to, name, resetLink }) {

@@ -74,7 +74,8 @@ export const api = {
     sendPasswordReset:    (id)         => request(`/admin/users/${id}/reset-password`, { method: 'POST' }),
     deleteUser:           (id)         => request(`/admin/users/${id}`,               { method: 'DELETE' }),
     getSmtp:              ()           => request('/admin/smtp'),
-    saveSmtp:             (body)       => request('/admin/smtp',                       { method: 'PUT',    body: JSON.stringify(body) })
+    saveSmtp:             (body)       => request('/admin/smtp',       { method: 'PUT',  body: JSON.stringify(body) }),
+    testSmtp:             (body)       => request('/admin/smtp/test',  { method: 'POST', body: JSON.stringify(body) })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>

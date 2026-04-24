@@ -1891,14 +1891,22 @@ input, select, textarea { font: inherit; }
 .user-action-divider { height: 1px; background: var(--border); margin: 0.2rem 0; }
 
 /* ── SMTP settings form ── */
-.smtp-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; max-width: 680px; }
+.smtp-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; max-width: 720px; }
 .smtp-title { font-size: 1.1rem; font-weight: 700; color: var(--green); margin: 0 0 0.25rem; }
-.smtp-form { display: flex; flex-direction: column; gap: 0.1rem; }
+.smtp-form { display: flex; flex-direction: column; gap: 0.25rem; }
 .smtp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.smtp-field-port { max-width: 120px; }
-.smtp-checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; margin: 0.5rem 0 1rem; }
-.smtp-saved { color: var(--green); font-size: 0.88rem; font-weight: 600; margin-bottom: 0.5rem; }
-@media (max-width: 560px) { .smtp-row { grid-template-columns: 1fr; } .smtp-field-port { max-width: 100%; } }
+.smtp-row-3 { grid-template-columns: 2fr 1fr 1fr; }
+.smtp-port-hint { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; margin-left: 0.3rem; }
+.smtp-field-ssl { display: flex; flex-direction: column; }
+.smtp-checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; margin-top: 0.35rem; }
+.smtp-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.smtp-test-btn { border: 1.5px solid var(--border); }
+.smtp-msg { padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.88rem; font-weight: 500; margin-top: 0.25rem; }
+.smtp-msg-ok  { background: var(--green-light); color: var(--green); border: 1px solid var(--border); }
+.smtp-msg-err { background: var(--red-light);   color: var(--red);   border: 1.5px solid #fca5a5; }
+@media (max-width: 620px) {
+  .smtp-row, .smtp-row-3 { grid-template-columns: 1fr; }
+}
 
 /* Admin users table */
 .admin-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
