@@ -162,6 +162,14 @@ input, select, textarea { font: inherit; }
 .auth-card-logo { font-size: 2.5rem; text-align: center; margin-bottom: 0.25rem; }
 .auth-card h2 { text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--green); margin-bottom: 0.25rem; }
 .auth-card-sub { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+.auth-link-btn {
+  background: none; border: none; color: var(--green-mid); font-size: 0.85rem;
+  cursor: pointer; padding: 0.25rem 0; text-decoration: underline; display: block;
+  margin: 0.5rem auto 0; text-align: center;
+}
+.auth-link-btn:hover { color: var(--green); }
+.forgot-done { text-align: center; padding: 1rem 0; }
+.forgot-done p { margin: 0.4rem 0; color: var(--text-muted); font-size: 0.9rem; }
 .auth-tabs { display: flex; gap: 0.4rem; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 1.5rem; }
 .auth-tabs button {
   flex: 1; padding: 0.5rem; border-radius: 8px; font-size: 0.88rem;
@@ -1866,7 +1874,7 @@ input, select, textarea { font: inherit; }
 .user-action-trigger:hover { background: var(--green-light); color: var(--green); border-color: var(--green); }
 .user-action-trigger:disabled { opacity: 0.5; cursor: not-allowed; }
 .user-action-items {
-  position: absolute; right: 0; top: calc(100% + 4px); z-index: 200;
+  position: fixed; z-index: 9999;
   background: var(--surface); border: 1.5px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow-md);
   min-width: 200px; overflow: hidden;
@@ -1881,6 +1889,16 @@ input, select, textarea { font: inherit; }
 .user-action-item--danger { color: var(--red); }
 .user-action-item--danger:hover { background: var(--red-light); color: var(--red); }
 .user-action-divider { height: 1px; background: var(--border); margin: 0.2rem 0; }
+
+/* ── SMTP settings form ── */
+.smtp-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; max-width: 680px; }
+.smtp-title { font-size: 1.1rem; font-weight: 700; color: var(--green); margin: 0 0 0.25rem; }
+.smtp-form { display: flex; flex-direction: column; gap: 0.1rem; }
+.smtp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.smtp-field-port { max-width: 120px; }
+.smtp-checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; cursor: pointer; margin: 0.5rem 0 1rem; }
+.smtp-saved { color: var(--green); font-size: 0.88rem; font-weight: 600; margin-bottom: 0.5rem; }
+@media (max-width: 560px) { .smtp-row { grid-template-columns: 1fr; } .smtp-field-port { max-width: 100%; } }
 
 /* Admin users table */
 .admin-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }

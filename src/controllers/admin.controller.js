@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import prisma from '../config/prisma.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { AppError } from '../utils/app-error.js';
+import { sendPasswordResetMail } from '../utils/mailer.js';
 
 // ── Reports ──────────────────────────────────────────────────────────────────
 
@@ -86,6 +88,57 @@ export const setUserStatus = catchAsync(async (req, res) => {
   });
 
   res.json({ userId: id, status });
+});
+
+export const sendUserPasswordReset = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) throw new AppError('Nutzer nicht gefunden.', 404);
+
+  await prisma.passwordResetToken.deleteMany({ where: { userId: id } });
+
+  const token     = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 h for admin-initiated
+
+  await prisma.passwordResetToken.create({ data: { userId: id, tokenHash, expiresAt } });
+
+  const base      = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+  const resetLink = `${base}/reset-password?token=${token}`;
+
+  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink });
+  res.json({ message: `Reset-E-Mail an ${user.email} gesendet.` });
+});
+
+// ── SMTP Settings ─────────────────────────────────────────────────────────────
+
+const MASK = '••••••••';
+
+export const getSmtp = catchAsync(async (_req, res) => {
+  const s = await prisma.smtpSettings.findFirst();
+  if (!s) return res.json({ settings: null });
+  res.json({ settings: { ...s, password: s.password ? MASK : '' } });
+});
+
+export const saveSmtp = catchAsync(async (req, res) => {
+  const { host, port, user, password, fromName, fromAddress, secure } = req.body;
+
+  const data = {
+    host:        String(host        || ''),
+    port:        parseInt(port)     || 587,
+    user:        String(user        || ''),
+    fromName:    String(fromName    || 'AngelMate'),
+    fromAddress: String(fromAddress || ''),
+    secure:      Boolean(secure)
+  };
+  if (password && password !== MASK) data.password = String(password);
+
+  const existing = await prisma.smtpSettings.findFirst();
+  const s = existing
+    ? await prisma.smtpSettings.update({ where: { id: existing.id }, data })
+    : await prisma.smtpSettings.create({ data: { ...data, password: data.password ?? '' } });
+
+  res.json({ settings: { ...s, password: s.password ? MASK : '' } });
 });
 
 export const updateUserRole = catchAsync(async (req, res) => {

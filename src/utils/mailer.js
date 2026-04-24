@@ -1,44 +1,71 @@
 import nodemailer from 'nodemailer';
+import prisma from '../config/prisma.js';
 
-function createTransport() {
+async function createTransport() {
+  const s = await prisma.smtpSettings.findFirst();
+  if (s?.host && s?.user && s?.password) {
+    return nodemailer.createTransport({
+      host: s.host, port: s.port, secure: s.secure,
+      auth: { user: s.user, pass: s.password }
+    });
+  }
   if (!process.env.MAIL_PASS) return null;
   return nodemailer.createTransport({
-    host: 'mail.gmx.net',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS
-    }
+    host: 'mail.gmx.net', port: 587, secure: false,
+    auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS }
   });
 }
 
+async function fromAddress() {
+  const s = await prisma.smtpSettings.findFirst();
+  const name = s?.fromName || 'AngelMate';
+  const addr = s?.fromAddress || process.env.MAIL_USER || '';
+  return `"${name}" <${addr}>`;
+}
+
 export async function sendReportMail({ senderName, senderEmail, against, reason }) {
-  const transport = createTransport();
+  const transport = await createTransport();
   if (!transport) {
-    console.warn('[mailer] MAIL_PASS nicht gesetzt – E-Mail wird nicht versendet.');
+    console.warn('[mailer] Kein SMTP konfiguriert – E-Mail nicht versendet.');
     return false;
   }
-
-  const text = `
-Neue Meldung über AngelMate
-============================
-Antragsteller:  ${senderName} <${senderEmail}>
-Beschwerde gegen: ${against}
-Eingegangen:    ${new Date().toLocaleString('de-DE')}
-
-Begründung:
------------
-${reason}
-`.trim();
-
+  const text = `Neue Meldung über AngelMate\n============================\nAntragsteller:  ${senderName} <${senderEmail}>\nBeschwerde gegen: ${against}\nEingegangen:    ${new Date().toLocaleString('de-DE')}\n\nBegründung:\n-----------\n${reason}`.trim();
   await transport.sendMail({
-    from: `"AngelMate Meldesystem" <${process.env.MAIL_USER}>`,
+    from: await fromAddress(),
     to: process.env.MAIL_USER,
     replyTo: senderEmail,
     subject: `[AngelMate] Meldung: ${against}`,
     text
   });
+  return true;
+}
 
+export async function sendPasswordResetMail({ to, name, resetLink }) {
+  const transport = await createTransport();
+  if (!transport) {
+    console.warn('[mailer] Kein SMTP konfiguriert – Reset-Mail nicht versendet.');
+    return false;
+  }
+  const html = `
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto">
+  <h2 style="color:#166534">🎣 AngelMate – Passwort zurücksetzen</h2>
+  <p>Hallo ${name},</p>
+  <p>du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt. Klicke auf den Button, um ein neues Passwort zu vergeben:</p>
+  <p style="margin:2rem 0">
+    <a href="${resetLink}" style="background:#166534;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:600">
+      Passwort zurücksetzen
+    </a>
+  </p>
+  <p style="color:#666;font-size:0.85rem">Der Link ist 1 Stunde gültig. Falls du keine Anfrage gestellt hast, kannst du diese E-Mail ignorieren.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0"/>
+  <p style="color:#999;font-size:0.8rem">AngelMate – Dein digitaler Angelbegleiter</p>
+</div>`.trim();
+
+  await transport.sendMail({
+    from: await fromAddress(),
+    to,
+    subject: '[AngelMate] Passwort zurücksetzen',
+    html
+  });
   return true;
 }

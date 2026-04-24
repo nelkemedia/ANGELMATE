@@ -15,6 +15,7 @@ import Guidelines from './pages/Guidelines';
 import Report from './pages/Report';
 import Privacy from './pages/Privacy';
 import Admin from './pages/Admin';
+import ResetPassword from './pages/ResetPassword';
 import Footer from './components/Footer';
 
 function Layout({ children }) {
@@ -41,7 +42,8 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/auth"           element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={
         <ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>
       } />

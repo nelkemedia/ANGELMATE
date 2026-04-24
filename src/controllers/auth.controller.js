@@ -1,9 +1,11 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import prisma from '../config/prisma.js';
 import { AppError } from '../utils/app-error.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { signToken } from '../utils/jwt.js';
+import { sendPasswordResetMail } from '../utils/mailer.js';
 
 const registerSchema = z.object({
   name: z.string().min(2).max(80),
@@ -124,4 +126,46 @@ export const changePassword = catchAsync(async (req, res) => {
   await prisma.user.update({ where: { id: req.user.id }, data: { passwordHash } });
 
   res.json({ message: 'Passwort erfolgreich geändert.' });
+});
+
+export const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  const ok = { message: 'Falls die E-Mail-Adresse registriert ist, wurde eine E-Mail gesendet.' };
+
+  const user = await prisma.user.findUnique({ where: { email: String(email || '') } });
+  if (!user) return res.json(ok); // no enumeration
+
+  await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+
+  const token     = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 h
+
+  await prisma.passwordResetToken.create({ data: { userId: user.id, tokenHash, expiresAt } });
+
+  const base      = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+  const resetLink = `${base}/reset-password?token=${token}`;
+
+  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink });
+  res.json(ok);
+});
+
+export const resetPassword = catchAsync(async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword || newPassword.length < 8)
+    throw new AppError('Ungültige Anfrage.', 400);
+
+  const tokenHash  = crypto.createHash('sha256').update(token).digest('hex');
+  const resetToken = await prisma.passwordResetToken.findUnique({
+    where: { tokenHash }
+  });
+
+  if (!resetToken || resetToken.expiresAt < new Date())
+    throw new AppError('Der Link ist ungültig oder abgelaufen.', 400);
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } });
+  await prisma.passwordResetToken.delete({ where: { tokenHash } });
+
+  res.json({ message: 'Passwort erfolgreich zurückgesetzt. Du kannst dich jetzt anmelden.' });
 });

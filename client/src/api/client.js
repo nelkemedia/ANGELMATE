@@ -26,11 +26,13 @@ async function request(path, options = {}) {
 
 export const api = {
   auth: {
-    register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-    login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
-    me: () => request('/auth/me'),
-    updateProfile: (body) => request('/auth/profile', { method: 'PUT', body: JSON.stringify(body) }),
-    changePassword: (body) => request('/auth/password', { method: 'PUT', body: JSON.stringify(body) })
+    register:       (body)             => request('/auth/register',        { method: 'POST', body: JSON.stringify(body) }),
+    login:          (body)             => request('/auth/login',            { method: 'POST', body: JSON.stringify(body) }),
+    me:             ()                 => request('/auth/me'),
+    updateProfile:  (body)             => request('/auth/profile',          { method: 'PUT',  body: JSON.stringify(body) }),
+    changePassword: (body)             => request('/auth/password',         { method: 'PUT',  body: JSON.stringify(body) }),
+    forgotPassword: (email)            => request('/auth/forgot-password',  { method: 'POST', body: JSON.stringify({ email }) }),
+    resetPassword:  (token, newPassword) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) })
   },
   catches: {
     list: () => request('/catches'),
@@ -66,10 +68,13 @@ export const api = {
     getReports:    ()   => request('/admin/reports'),
     resolveReport: (id) => request(`/admin/reports/${id}/resolve`, { method: 'PATCH' }),
     deleteReport:  (id) => request(`/admin/reports/${id}`, { method: 'DELETE' }),
-    getUsers:       ()            => request('/admin/users'),
-    setUserStatus:  (id, status)  => request(`/admin/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-    updateUserRole: (id, role)    => request(`/admin/users/${id}/role`,   { method: 'PATCH', body: JSON.stringify({ role }) }),
-    deleteUser:     (id)          => request(`/admin/users/${id}`,        { method: 'DELETE' })
+    getUsers:             ()           => request('/admin/users'),
+    setUserStatus:        (id, status) => request(`/admin/users/${id}/status`,         { method: 'PATCH',  body: JSON.stringify({ status }) }),
+    updateUserRole:       (id, role)   => request(`/admin/users/${id}/role`,           { method: 'PATCH',  body: JSON.stringify({ role }) }),
+    sendPasswordReset:    (id)         => request(`/admin/users/${id}/reset-password`, { method: 'POST' }),
+    deleteUser:           (id)         => request(`/admin/users/${id}`,               { method: 'DELETE' }),
+    getSmtp:              ()           => request('/admin/smtp'),
+    saveSmtp:             (body)       => request('/admin/smtp',                       { method: 'PUT',    body: JSON.stringify(body) })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>
