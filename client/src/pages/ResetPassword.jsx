@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
+import { useT } from '../context/TranslationContext';
 
 export default function ResetPassword() {
+  const { t } = useT();
   const [params]                  = useSearchParams();
   const token                     = params.get('token') || '';
   const navigate                  = useNavigate();
@@ -15,9 +17,9 @@ export default function ResetPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (password !== password2) return setError('Die Passwörter stimmen nicht überein.');
-    if (password.length < 8)   return setError('Passwort muss mindestens 8 Zeichen haben.');
-    if (!token)                 return setError('Kein gültiger Token – bitte den Link aus der E-Mail verwenden.');
+    if (password !== password2) return setError(t('auth.reset_err_mismatch'));
+    if (password.length < 8)   return setError(t('auth.reset_err_short'));
+    if (!token)                 return setError(t('auth.reset_err_no_token'));
 
     setLoading(true);
     try {
@@ -40,37 +42,37 @@ export default function ResetPassword() {
           {done ? (
             <div style={{ textAlign: 'center' }}>
               <p style={{ fontSize: '2.5rem', margin: '0.5rem 0' }}>✅</p>
-              <p><strong>Passwort gesetzt!</strong></p>
+              <p><strong>{t('auth.reset_done_title')}</strong></p>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                Du kannst dich jetzt mit deinem neuen Passwort anmelden.
+                {t('auth.reset_done_body')}
               </p>
               <button className="btn-primary btn-full" onClick={() => navigate('/auth')}>
-                Zur Anmeldung
+                {t('auth.reset_go_login')}
               </button>
             </div>
           ) : (
             <>
-              <p className="auth-card-sub">Neues Passwort vergeben</p>
+              <p className="auth-card-sub">{t('auth.reset_title')}</p>
               <form onSubmit={handleSubmit}>
                 <div className="field">
-                  <label>Neues Passwort</label>
+                  <label>{t('auth.reset_new_pw')}</label>
                   <input
                     type="password" value={password} required minLength={8}
-                    placeholder="Mindestens 8 Zeichen"
+                    placeholder={t('auth.reset_pw_ph')}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
                 <div className="field">
-                  <label>Passwort wiederholen</label>
+                  <label>{t('auth.reset_confirm_pw')}</label>
                   <input
                     type="password" value={password2} required
-                    placeholder="Passwort bestätigen"
+                    placeholder={t('auth.reset_confirm_ph')}
                     onChange={(e) => setPassword2(e.target.value)}
                   />
                 </div>
                 {error && <div className="error-msg">⚠️ {error}</div>}
                 <button type="submit" className="btn-primary btn-full" disabled={loading}>
-                  {loading ? '⏳ Bitte warten…' : '🔑 Passwort setzen'}
+                  {loading ? `⏳ ${t('auth.reset_loading')}` : `🔑 ${t('auth.reset_btn')}`}
                 </button>
               </form>
             </>

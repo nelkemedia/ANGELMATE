@@ -2,36 +2,37 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
+import { toLocaleTag } from '../utils/locale';
 import Avatar from '../components/Avatar';
 import PhotoLightbox from '../components/PhotoLightbox';
 
 const SKILL_EMOJI = { beginner: '🐣', intermediate: '🎯', advanced: '🏆' };
-const SKILL_LABEL = { beginner: 'Anfänger', intermediate: 'Fortgeschritten', advanced: 'Profi' };
 const MEDAL = ['🥇', '🥈', '🥉'];
 
-// ─── Main page ────────────────────────────────────────────────────────────────
 export default function Community() {
+  const { t } = useT();
   const [tab, setTab] = useState('feed');
 
   return (
     <div>
       <div className="section-photo-banner section-photo-banner--community">
         <div className="section-photo-banner-text">
-          <h2>🌍 Community</h2>
-          <p>Fänge teilen · abstimmen · messen</p>
+          <h2>🌍 {t('community.title')}</h2>
+          <p>{t('community.subtitle')}</p>
         </div>
       </div>
 
       <div className="page">
         <div className="community-tabs">
           <button className={`community-tab ${tab === 'feed' ? 'active' : ''}`} onClick={() => setTab('feed')}>
-            📰 Feed
+            📰 {t('community.tab_feed')}
           </button>
           <button className={`community-tab ${tab === 'leaderboard' ? 'active' : ''}`} onClick={() => setTab('leaderboard')}>
-            🏆 Rangliste
+            🏆 {t('community.tab_leaderboard')}
           </button>
           <button className={`community-tab ${tab === 'cotw' ? 'active' : ''}`} onClick={() => setTab('cotw')}>
-            ⭐ Fang der Woche
+            ⭐ {t('community.tab_cotw')}
           </button>
         </div>
 
@@ -43,9 +44,9 @@ export default function Community() {
   );
 }
 
-// ─── Feed tab ─────────────────────────────────────────────────────────────────
 function FeedTab() {
   const { user } = useAuth();
+  const { t, locale } = useT();
   const [items, setItems]     = useState([]);
   const [page, setPage]       = useState(1);
   const [pages, setPages]     = useState(1);
@@ -81,8 +82,9 @@ function FeedTab() {
     <>
       <div className="community-header">
         <p className="page-desc" style={{ margin: 0 }}>
-          Alle öffentlichen Fänge der AngelMate-Community. Teile deinen eigenen Fang im{' '}
-          <Link to="/catches">Fangbuch</Link> mit dem Schalter „Öffentlich sichtbar".
+          {t('community.feed_desc_before')}{' '}
+          <Link to="/catches">{t('nav.catches')}</Link>
+          {' '}{t('community.feed_desc_after')}
         </p>
       </div>
 
@@ -91,8 +93,8 @@ function FeedTab() {
       {!loading && items.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon">🌍</div>
-          <p>Noch keine öffentlichen Fänge. Sei der Erste!</p>
-          <Link to="/catches" className="btn-primary">🎣 Fang teilen</Link>
+          <p>{t('community.feed_empty')}</p>
+          <Link to="/catches" className="btn-primary">🎣 {t('community.share_catch')}</Link>
         </div>
       )}
 
@@ -111,20 +113,20 @@ function FeedTab() {
         ))}
       </div>
 
-      {loading && <div className="loading">🌍 Lade Feed…</div>}
+      {loading && <div className="loading">🌍 {t('community.feed_loading')}</div>}
 
       {!loading && page < pages && (
         <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-          <button className="btn-ghost" onClick={() => load(page + 1)}>Mehr laden…</button>
+          <button className="btn-ghost" onClick={() => load(page + 1)}>{t('community.load_more')}</button>
         </div>
       )}
     </>
   );
 }
 
-// ─── Leaderboard tab ──────────────────────────────────────────────────────────
 function LeaderboardTab() {
   const { user } = useAuth();
+  const { t } = useT();
   const [scope,  setScope]   = useState('national');
   const [metric, setMetric]  = useState('catches');
   const [items,  setItems]   = useState([]);
@@ -146,45 +148,43 @@ function LeaderboardTab() {
 
   useEffect(() => { load(); }, [scope, metric]);
 
-  const metricLabels = { catches: '🎣 Fänge', weight: '⚖️ Gesamtgewicht', record: '🐋 Rekordfang' };
+  const metricLabels = {
+    catches: `🎣 ${t('community.metric_catches')}`,
+    weight:  `⚖️ ${t('community.metric_weight')}`,
+    record:  `🐋 ${t('community.metric_record')}`
+  };
 
   return (
     <div className="lb-container">
       <div className="lb-controls">
         <div className="lb-scope-btns">
-          <button
-            className={`lb-scope-btn ${scope === 'national' ? 'active' : ''}`}
-            onClick={() => setScope('national')}
-          >🌍 National</button>
+          <button className={`lb-scope-btn ${scope === 'national' ? 'active' : ''}`} onClick={() => setScope('national')}>
+            🌍 {t('community.scope_national')}
+          </button>
           <button
             className={`lb-scope-btn ${scope === 'local' ? 'active' : ''}`}
             onClick={() => setScope('local')}
-            title={user?.homeRegion ? `Region: ${user.homeRegion}` : 'Kein Heimatrevier im Profil'}
+            title={user?.homeRegion ? `${t('community.region_label')}: ${user.homeRegion}` : t('community.no_region')}
           >
-            📍 Lokal {user?.homeRegion ? `(${user.homeRegion})` : ''}
+            📍 {t('community.scope_local')} {user?.homeRegion ? `(${user.homeRegion})` : ''}
           </button>
         </div>
         <div className="lb-metric-select">
           {Object.entries(metricLabels).map(([key, label]) => (
-            <button
-              key={key}
-              className={`lb-metric-btn ${metric === key ? 'active' : ''}`}
-              onClick={() => setMetric(key)}
-            >{label}</button>
+            <button key={key} className={`lb-metric-btn ${metric === key ? 'active' : ''}`} onClick={() => setMetric(key)}>
+              {label}
+            </button>
           ))}
         </div>
       </div>
 
       {error && <div className="error-msg">⚠️ {error}</div>}
-      {loading && <div className="loading">🏆 Lade Rangliste…</div>}
+      {loading && <div className="loading">🏆 {t('community.lb_loading')}</div>}
 
       {!loading && items.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon">🏆</div>
-          <p>{scope === 'local' && !user?.homeRegion
-            ? 'Lege zuerst dein Heimatrevier im Profil fest.'
-            : 'Noch keine Einträge für diesen Bereich.'}
-          </p>
+          <p>{scope === 'local' && !user?.homeRegion ? t('community.lb_no_region') : t('community.lb_empty')}</p>
         </div>
       )}
 
@@ -198,10 +198,10 @@ function LeaderboardTab() {
               <Avatar src={u.avatarBase64} name={u.name} size={42} className="lb-avatar" />
               <div className="lb-info">
                 <span className="lb-name">
-                  {u.name} {u.id === user?.id && <span className="lb-you-badge">Du</span>}
+                  {u.name} {u.id === user?.id && <span className="lb-you-badge">{t('community.lb_you')}</span>}
                 </span>
                 <span className="lb-meta">
-                  {SKILL_EMOJI[u.skillLevel]} {SKILL_LABEL[u.skillLevel]}
+                  {SKILL_EMOJI[u.skillLevel]} {t(`skill.${u.skillLevel}`)}
                   {u.homeRegion && ` · 📍 ${u.homeRegion}`}
                 </span>
               </div>
@@ -214,9 +214,9 @@ function LeaderboardTab() {
   );
 }
 
-// ─── Catch of the Week tab ────────────────────────────────────────────────────
 function CotwTab() {
   const { user } = useAuth();
+  const { t } = useT();
   const [data, setData]       = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -251,12 +251,7 @@ function CotwTab() {
           if (c.id === catchId) v = result.voted ? v + 1 : Math.max(0, v - 1);
           return { ...c, weekVotes: v };
         }).sort((a, b) => b.weekVotes - a.weekVotes);
-        return {
-          ...prev,
-          nominees,
-          myVotedCatchId: result.voted ? catchId : null,
-          totalVotes: prev.totalVotes + (result.voted ? 1 : -1)
-        };
+        return { ...prev, nominees, myVotedCatchId: result.voted ? catchId : null, totalVotes: prev.totalVotes + (result.voted ? 1 : -1) };
       });
     } catch { /* ignore */ }
     finally { setVoting(null); }
@@ -266,76 +261,56 @@ function CotwTab() {
   const formatWeek = (w) => {
     if (!w) return '';
     const [yr, wPart] = w.split('-W');
-    return `KW ${parseInt(wPart)} / ${yr}`;
+    return `${t('community.week_abbr')} ${parseInt(wPart)} / ${yr}`;
   };
 
   return (
     <div className="cotw-container">
       <div className="cotw-header">
         <div className="cotw-header-text">
-          <h3>⭐ Fang der Woche</h3>
-          <p>Stimme für den besten öffentlichen Fang ab — ein Vote pro Woche.</p>
-          {data && <span className="cotw-week-badge">{formatWeek(data.week)} · {data.totalVotes} Votes gesamt</span>}
+          <h3>⭐ {t('community.cotw_title')}</h3>
+          <p>{t('community.cotw_desc')}</p>
+          {data && <span className="cotw-week-badge">{formatWeek(data.week)} · {data.totalVotes} {t('community.votes_total')}</span>}
         </div>
       </div>
 
       {error  && <div className="error-msg">⚠️ {error}</div>}
-      {loading && <div className="loading">⭐ Lade Abstimmung…</div>}
+      {loading && <div className="loading">⭐ {t('community.cotw_loading')}</div>}
 
       {!loading && data && (
         <>
-          {/* Leader podium */}
           {leader && leader.weekVotes > 0 && (
             <div className="cotw-leader">
-              <div className="cotw-leader-crown">👑 Aktuell führend</div>
-              <CotwCard
-                catch_={leader}
-                myVotedCatchId={data.myVotedCatchId}
-                onVote={handleVote}
-                voting={voting}
-                isLeader
-                user={user}
-              />
+              <div className="cotw-leader-crown">👑 {t('community.leading')}</div>
+              <CotwCard catch_={leader} myVotedCatchId={data.myVotedCatchId} onVote={handleVote} voting={voting} isLeader user={user} t={t} />
             </div>
           )}
 
-          {/* Nomination list */}
           <div className="cotw-nominees">
-            <h4 className="cotw-nominees-title">Alle Nominierungen</h4>
+            <h4 className="cotw-nominees-title">{t('community.all_nominees')}</h4>
             {data.nominees.length === 0 && (
               <div className="empty-state">
                 <div className="empty-icon">⭐</div>
-                <p>Noch keine öffentlichen Fänge zum Abstimmen.</p>
-                <Link to="/catches" className="btn-primary">🎣 Fang teilen</Link>
+                <p>{t('community.cotw_empty')}</p>
+                <Link to="/catches" className="btn-primary">🎣 {t('community.share_catch')}</Link>
               </div>
             )}
             <div className="cotw-list">
               {data.nominees.map((c, i) => (
-                <CotwCard
-                  key={c.id}
-                  catch_={c}
-                  rank={i + 1}
-                  myVotedCatchId={data.myVotedCatchId}
-                  onVote={handleVote}
-                  voting={voting}
-                  user={user}
-                />
+                <CotwCard key={c.id} catch_={c} rank={i + 1} myVotedCatchId={data.myVotedCatchId} onVote={handleVote} voting={voting} user={user} t={t} />
               ))}
             </div>
           </div>
 
-          {/* History */}
           {history.length > 0 && (
             <div className="cotw-history">
-              <h4 className="cotw-nominees-title">🏅 Frühere Gewinner</h4>
+              <h4 className="cotw-nominees-title">🏅 {t('community.past_winners')}</h4>
               <div className="cotw-history-list">
                 {history.map((h) => (
                   <div key={h.week} className="cotw-history-row">
                     <span className="cotw-history-week">{formatWeek(h.week)}</span>
-                    <span className="cotw-history-winner">
-                      🥇 {h.winner.fishSpecies} – {h.winner.user?.name}
-                    </span>
-                    <span className="cotw-history-votes">{h.winner.weekVotes} Votes</span>
+                    <span className="cotw-history-winner">🥇 {h.winner.fishSpecies} – {h.winner.user?.name}</span>
+                    <span className="cotw-history-votes">{h.winner.weekVotes} {t('community.votes')}</span>
                   </div>
                 ))}
               </div>
@@ -347,8 +322,7 @@ function CotwTab() {
   );
 }
 
-// ─── COTW card component ──────────────────────────────────────────────────────
-function CotwCard({ catch_: c, rank, myVotedCatchId, onVote, voting, isLeader, user }) {
+function CotwCard({ catch_: c, rank, myVotedCatchId, onVote, voting, isLeader, user, t }) {
   const voted = myVotedCatchId === c.id;
   const isMe  = c.user?.id === user?.id;
 
@@ -359,9 +333,7 @@ function CotwCard({ catch_: c, rank, myVotedCatchId, onVote, voting, isLeader, u
         <div className="feed-card-header" style={{ marginBottom: '0.5rem' }}>
           <Avatar src={c.user?.avatarBase64} name={c.user?.name} size={36} className="feed-avatar" />
           <div className="feed-user-info">
-            <span className="feed-user-name">
-              {c.user?.name} <span className="feed-skill">{SKILL_EMOJI[c.user?.skillLevel]}</span>
-            </span>
+            <span className="feed-user-name">{c.user?.name} <span className="feed-skill">{SKILL_EMOJI[c.user?.skillLevel]}</span></span>
             {c.user?.homeRegion && <span className="feed-region">📍 {c.user.homeRegion}</span>}
           </div>
         </div>
@@ -373,30 +345,25 @@ function CotwCard({ catch_: c, rank, myVotedCatchId, onVote, voting, isLeader, u
         </div>
         {c.notes && <div className="feed-notes" style={{ marginTop: '0.4rem' }}>💬 {c.notes}</div>}
       </div>
-
       <div className="cotw-card-vote">
         <div className="cotw-vote-count">
           <span className="cotw-vote-num">{c.weekVotes}</span>
-          <span className="cotw-vote-label">Votes</span>
+          <span className="cotw-vote-label">{t('community.votes')}</span>
         </div>
         {user && !isMe && (
-          <button
-            className={`cotw-vote-btn ${voted ? 'cotw-vote-btn-active' : ''}`}
-            onClick={() => onVote(c.id)}
-            disabled={voting !== null}
-          >
-            {voting === c.id ? '⏳' : voted ? '⭐ Gewählt' : '☆ Wählen'}
+          <button className={`cotw-vote-btn ${voted ? 'cotw-vote-btn-active' : ''}`} onClick={() => onVote(c.id)} disabled={voting !== null}>
+            {voting === c.id ? '⏳' : voted ? `⭐ ${t('community.voted')}` : `☆ ${t('community.vote')}`}
           </button>
         )}
-        {!user && <span className="cotw-login-hint">Einloggen zum Abstimmen</span>}
-        {isMe  && <span className="cotw-login-hint">Dein Fang</span>}
+        {!user && <span className="cotw-login-hint">{t('community.login_to_vote')}</span>}
+        {isMe  && <span className="cotw-login-hint">{t('community.your_catch')}</span>}
       </div>
     </div>
   );
 }
 
-// ─── Feed card (unchanged from before) ───────────────────────────────────────
 function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCountChange }) {
+  const { t, locale } = useT();
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [comments, setComments]         = useState(null);
   const [commLoading, setCommLoading]   = useState(false);
@@ -435,20 +402,16 @@ function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCoun
     onCommentCountChange(c.id, -1);
   }
 
-  const isOwner = c.user?.id === currentUserId;
-
   return (
     <div className="feed-card">
       <div className="feed-card-header">
         <Avatar src={c.user?.avatarBase64} name={c.user?.name} size={36} className="feed-avatar" />
         <div className="feed-user-info">
-          <span className="feed-user-name">
-            {c.user?.name} {' '}<span className="feed-skill">{SKILL_EMOJI[c.user?.skillLevel]}</span>
-          </span>
+          <span className="feed-user-name">{c.user?.name} {' '}<span className="feed-skill">{SKILL_EMOJI[c.user?.skillLevel]}</span></span>
           {c.user?.homeRegion && <span className="feed-region">📍 {c.user.homeRegion}</span>}
         </div>
         <span className="feed-date">
-          {new Date(c.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}
+          {new Date(c.createdAt).toLocaleDateString(toLocaleTag(locale), { day: '2-digit', month: 'short', year: 'numeric' })}
         </span>
       </div>
 
@@ -463,7 +426,7 @@ function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCoun
         <div className="feed-fish-name">🐟 {c.fishSpecies}</div>
         <div className="feed-meta-row">
           <span>📍 {c.waterName}</span>
-          <span>📅 {new Date(c.caughtAt).toLocaleDateString('de-DE')}</span>
+          <span>📅 {new Date(c.caughtAt).toLocaleDateString(toLocaleTag(locale))}</span>
           {c.weight && <span>⚖️ {c.weight} kg</span>}
           {c.length && <span>📏 {c.length} cm</span>}
         </div>
@@ -472,22 +435,19 @@ function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCoun
       </div>
 
       <div className="feed-card-actions">
-        <button
-          className={`feed-action-btn ${c.likedByMe ? 'feed-action-liked' : ''}`}
-          onClick={() => onLike(c.id, c.likedByMe, c.likeCount)}
-        >
-          {c.likedByMe ? '❤️' : '🤍'} {c.likeCount > 0 ? c.likeCount : ''} Gefällt mir
+        <button className={`feed-action-btn ${c.likedByMe ? 'feed-action-liked' : ''}`} onClick={() => onLike(c.id, c.likedByMe, c.likeCount)}>
+          {c.likedByMe ? '❤️' : '🤍'} {c.likeCount > 0 ? c.likeCount : ''} {t('community.like')}
         </button>
         <button className="feed-action-btn" onClick={openComments}>
-          💬 {c.commentCount > 0 ? c.commentCount : ''} Kommentieren
+          💬 {c.commentCount > 0 ? c.commentCount : ''} {t('community.comment')}
         </button>
       </div>
 
       {commentsOpen && (
         <div className="feed-comments">
-          {commLoading && <div className="feed-comments-loading">Lade Kommentare…</div>}
+          {commLoading && <div className="feed-comments-loading">{t('community.comments_loading')}</div>}
           {comments?.length === 0 && !commLoading && (
-            <div className="feed-comments-empty">Noch keine Kommentare. Schreib den ersten! 👇</div>
+            <div className="feed-comments-empty">{t('community.comments_empty')}</div>
           )}
           {comments?.map((cm) => (
             <div key={cm.id} className="feed-comment">
@@ -496,7 +456,7 @@ function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCoun
                 <div className="feed-comment-header">
                   <span className="feed-comment-author">{cm.user?.name}</span>
                   <span className="feed-comment-time">
-                    {new Date(cm.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })}
+                    {new Date(cm.createdAt).toLocaleDateString(toLocaleTag(locale), { day: '2-digit', month: 'short' })}
                   </span>
                   {cm.user?.id === currentUserId && (
                     <button className="feed-comment-delete" onClick={() => handleDeleteComment(cm.id)}>✕</button>
@@ -508,17 +468,8 @@ function FeedCard({ catch_: c, currentUserId, currentUser, onLike, onCommentCoun
           ))}
           <form className="feed-comment-form" onSubmit={handlePost}>
             <Avatar src={currentUser?.avatarBase64} name={currentUser?.name} size={30} className="feed-comment-avatar feed-comment-avatar-me" />
-            <input
-              ref={inputRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Kommentar schreiben…"
-              maxLength={500}
-              disabled={posting}
-            />
-            <button type="submit" className="btn-primary" disabled={posting || !text.trim()}>
-              {posting ? '⏳' : '📨'}
-            </button>
+            <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('community.comment_placeholder')} maxLength={500} disabled={posting} />
+            <button type="submit" className="btn-primary" disabled={posting || !text.trim()}>{posting ? '⏳' : '📨'}</button>
           </form>
         </div>
       )}

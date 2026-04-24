@@ -2,6 +2,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { catchAsync } from '../utils/catch-async.js';
 import { AppError } from '../utils/app-error.js';
 
+const LANG_INSTRUCTION = {
+  de: 'Antworte auf Deutsch.',
+  en: 'Respond in English.',
+  fr: 'Réponds en français.',
+};
+
 function getModel() {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new AppError('GEMINI_API_KEY nicht konfiguriert. Bitte in .env eintragen.', 503);
@@ -10,25 +16,26 @@ function getModel() {
 }
 
 export const identifyFish = catchAsync(async (req, res) => {
-  const { imageBase64, mimeType = 'image/jpeg' } = req.body;
+  const { imageBase64, mimeType = 'image/jpeg', lang = 'de' } = req.body;
   if (!imageBase64) throw new AppError('imageBase64 fehlt im Request-Body.', 400);
 
+  const langNote = LANG_INSTRUCTION[lang] ?? LANG_INSTRUCTION.de;
   const model = getModel();
 
   let result;
   try {
     result = await model.generateContent([
       { inlineData: { data: imageBase64, mimeType } },
-      `Du bist ein Experte für Süß- und Salzwasserfische in Mitteleuropa.
+      `Du bist ein Experte für Süß- und Salzwasserfische in Mitteleuropa. ${langNote}
 Analysiere das Bild und antworte ausschließlich als JSON-Objekt (kein Markdown, kein Text davor/danach):
 {
-  "species": "Deutscher Artname",
+  "species": "Artname",
   "speciesLatin": "Lateinischer Name",
   "confidence": "hoch|mittel|niedrig",
   "weightRange": "typisches Gewicht, z.B. 0.5–3 kg",
   "lengthRange": "typische Länge, z.B. 30–60 cm",
   "habitat": "Lebensraum in einem Satz",
-  "fishingTip": "Kurzer Anglertipp auf Deutsch (max. 2 Sätze)",
+  "fishingTip": "Kurzer Anglertipp (max. 2 Sätze)",
   "isFish": true
 }
 Falls kein Fisch erkennbar ist, gib { "isFish": false, "species": null } zurück.`
@@ -57,17 +64,18 @@ Falls kein Fisch erkennbar ist, gib { "isFish": false, "species": null } zurück
 });
 
 export const analyzeForecast = catchAsync(async (req, res) => {
-  const { weather, location } = req.body;
+  const { weather, location, lang = 'de' } = req.body;
   if (!weather) throw new AppError('weather-Objekt fehlt im Request-Body.', 400);
 
-  const { temperature, pressure, windSpeed, cloudCover, humidity, uvIndex, weatherCode } = weather;
+  const { temperature, pressure, windSpeed, cloudCover, humidity, uvIndex } = weather;
   const now = new Date();
   const hour = now.getHours();
   const month = now.getMonth() + 1;
+  const langNote = LANG_INSTRUCTION[lang] ?? LANG_INSTRUCTION.de;
 
   const model = getModel();
 
-  const prompt = `Du bist ein erfahrener Angler und Fischereibiologe. Analysiere die aktuellen Bedingungen und bewerte die Angelchancen.
+  const prompt = `Du bist ein erfahrener Angler und Fischereibiologe. Analysiere die aktuellen Bedingungen und bewerte die Angelchancen. ${langNote}
 
 Aktuelle Wetterdaten:
 - Temperatur: ${temperature}°C
@@ -77,7 +85,7 @@ Aktuelle Wetterdaten:
 ${humidity !== undefined ? `- Luftfeuchtigkeit: ${humidity}%` : ''}
 ${uvIndex !== undefined ? `- UV-Index: ${uvIndex}` : ''}
 - Tageszeit: ${hour}:00 Uhr
-- Monat: ${month} (${getMonthName(month)})
+- Monat: ${month}
 ${location ? `- Region: ${location}` : ''}
 
 Antworte ausschließlich als JSON (kein Markdown, kein Text davor/danach):
@@ -85,7 +93,7 @@ Antworte ausschließlich als JSON (kein Markdown, kein Text davor/danach):
   "biteIndex": <Zahl 0-100>,
   "level": "excellent|good|moderate|poor",
   "headline": "Kurze prägnante Überschrift (max. 8 Wörter)",
-  "recommendation": "Ausführliche Empfehlung für den Angler (3-4 Sätze auf Deutsch). Was sollte er/sie beachten? Welche Köder empfiehlt sich?",
+  "recommendation": "Ausführliche Empfehlung für den Angler (3-4 Sätze). Was sollte er/sie beachten? Welche Köder empfehlen sich?",
   "bestSpecies": ["Fischart1", "Fischart2", "Fischart3"],
   "bestTimeWindow": "z.B. 05:30–08:30 und 19:00–21:00 Uhr",
   "bestBait": "Empfohlener Köder für heute",
@@ -125,7 +133,3 @@ Antworte ausschließlich als JSON (kein Markdown, kein Text davor/danach):
 
   res.json(parsed);
 });
-
-function getMonthName(m) {
-  return ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][m - 1];
-}

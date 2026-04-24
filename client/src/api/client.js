@@ -19,6 +19,7 @@ async function request(path, options = {}) {
   if (!res.ok) {
     const err = new Error(data.message || 'Fehler beim API-Aufruf');
     err.status = res.status;
+    err.code = data.code ?? null;
     throw err;
   }
   return data;
@@ -75,7 +76,10 @@ export const api = {
     deleteUser:           (id)         => request(`/admin/users/${id}`,               { method: 'DELETE' }),
     getSmtp:              ()           => request('/admin/smtp'),
     saveSmtp:             (body)       => request('/admin/smtp',       { method: 'PUT',  body: JSON.stringify(body) }),
-    testSmtp:             (body)       => request('/admin/smtp/test',  { method: 'POST', body: JSON.stringify(body) })
+    testSmtp:             (body)       => request('/admin/smtp/test',  { method: 'POST', body: JSON.stringify(body) }),
+    getTranslations:      ()           => request('/admin/translations'),
+    upsertTranslation:    (body)       => request('/admin/translations',       { method: 'PUT',    body: JSON.stringify(body) }),
+    deleteTranslation:    (key)        => request(`/admin/translations/${encodeURIComponent(key)}`, { method: 'DELETE' })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>
@@ -87,9 +91,9 @@ export const api = {
     history: () => request('/cotw/history')
   },
   ai: {
-    identifyFish: (imageBase64, mimeType) =>
-      request('/ai/identify-fish', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType }) }),
-    analyzeForecast: (weather, location) =>
-      request('/ai/analyze-forecast', { method: 'POST', body: JSON.stringify({ weather, location }) })
+    identifyFish: (imageBase64, mimeType, lang = 'de') =>
+      request('/ai/identify-fish', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, lang }) }),
+    analyzeForecast: (weather, location, lang = 'de') =>
+      request('/ai/analyze-forecast', { method: 'POST', body: JSON.stringify({ weather, location, lang }) })
   }
 };

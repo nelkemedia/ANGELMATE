@@ -1,123 +1,77 @@
+import { useT } from '../context/TranslationContext';
+
 const FISHING_KING_URL = 'https://www.fishing-king.de/';
 
-const STEPS = [
-  {
-    icon: '📝',
-    title: 'Registrieren',
-    text: 'Kostenloses Konto bei Fishing-King anlegen — in unter einer Minute.',
-  },
-  {
-    icon: '📚',
-    title: 'Online lernen',
-    text: 'Lernkarten, Prüfungsfragen und Erklärvideos bequem am PC oder Smartphone.',
-  },
-  {
-    icon: '✅',
-    title: 'Prüfung bestehen',
-    text: 'Simuliere die offizielle Angelprüfung so oft du willst, bis du fit bist.',
-  },
-  {
-    icon: '🎣',
-    title: 'Angelschein erhalten',
-    text: 'Nach bestandener Prüfung beim zuständigen Fischereiverein den Schein beantragen.',
-  },
-];
-
-const INFO_CARDS = [
-  {
-    icon: '📋',
-    title: 'Was ist der Angelschein?',
-    text: 'Der Jahresfischereischein (umgangssprachlich „Angelschein") berechtigt dich, in Deutschland legal zu angeln. Er setzt die erfolgreich abgelegte Fischerprüfung voraus.',
-  },
-  {
-    icon: '🌍',
-    title: 'Gilt bundesweit?',
-    text: 'Der Jugendfischereischein und der Jahresfischereischein gelten bundesweit. Einzelne Bundesländer haben leicht unterschiedliche Prüfungsanforderungen.',
-  },
-  {
-    icon: '⏱',
-    title: 'Wie lange dauert es?',
-    text: 'Mit konsequentem Selbststudium sind die meisten Kandidaten in 4–8 Wochen prüfungsbereit. Fishing-King zeigt dir täglich deinen Lernfortschritt.',
-  },
-  {
-    icon: '💶',
-    title: 'Was kostet es?',
-    text: 'Die Prüfungsgebühren variieren je nach Bundesland (ca. 30–80 €). Das Lernportal bei Fishing-King ist kostenlos nutzbar.',
-  },
-];
-
 export default function License() {
+  const { t } = useT();
+
+  const STEPS = [
+    { icon: '📝', titleKey: 'license.step1_title', textKey: 'license.step1_text' },
+    { icon: '📚', titleKey: 'license.step2_title', textKey: 'license.step2_text' },
+    { icon: '✅', titleKey: 'license.step3_title', textKey: 'license.step3_text' },
+    { icon: '🎣', titleKey: 'license.step4_title', textKey: 'license.step4_text' },
+  ];
+
+  const INFO_CARDS = [
+    { icon: '📋', titleKey: 'license.faq1_title', textKey: 'license.faq1_text' },
+    { icon: '🌍', titleKey: 'license.faq2_title', textKey: 'license.faq2_text' },
+    { icon: '⏱',  titleKey: 'license.faq3_title', textKey: 'license.faq3_text' },
+    { icon: '💶', titleKey: 'license.faq4_title', textKey: 'license.faq4_text' },
+  ];
+
   return (
     <div>
-      {/* Banner */}
       <div className="section-photo-banner section-photo-banner--license">
         <div className="section-photo-banner-text">
-          <h2>📋 Angelschein online</h2>
-          <p>Vorbereitung · Prüfung · Lizenz — alles digital</p>
+          <h2>📋 {t('license.title')}</h2>
+          <p>{t('license.subtitle')}</p>
         </div>
       </div>
 
       <div className="page">
 
-        {/* Hero CTA */}
         <div className="license-hero-card">
           <div className="license-hero-logo">🎣</div>
           <div className="license-hero-text">
-            <h3>Jetzt Angelschein online machen</h3>
-            <p>
-              Mit <strong>Fishing-King</strong> lernst du alles für die Fischerprüfung bequem von zu Hause —
-              kostenlos, interaktiv und im eigenen Tempo.
-            </p>
+            <h3>{t('license.hero_title')}</h3>
+            <p dangerouslySetInnerHTML={{ __html: t('license.hero_body') }} />
           </div>
-          <a
-            href={FISHING_KING_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="license-cta-btn"
-          >
-            Zu Fishing&#8209;King&nbsp;→
+          <a href={FISHING_KING_URL} target="_blank" rel="noopener noreferrer" className="license-cta-btn">
+            {t('license.cta_btn')}
           </a>
         </div>
 
-        {/* Steps */}
-        <h3 className="license-section-title">So funktioniert es</h3>
+        <h3 className="license-section-title">{t('license.steps_title')}</h3>
         <div className="license-steps">
           {STEPS.map((s, i) => (
             <div key={i} className="license-step">
               <div className="license-step-num">{i + 1}</div>
               <div className="license-step-icon">{s.icon}</div>
               <div className="license-step-body">
-                <strong>{s.title}</strong>
-                <p>{s.text}</p>
+                <strong>{t(s.titleKey)}</strong>
+                <p>{t(s.textKey)}</p>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Info cards */}
-        <h3 className="license-section-title">Häufige Fragen</h3>
+        <h3 className="license-section-title">{t('license.faq_title')}</h3>
         <div className="license-info-grid">
           {INFO_CARDS.map((c, i) => (
             <div key={i} className="license-info-card">
               <span className="license-info-icon">{c.icon}</span>
-              <h4>{c.title}</h4>
-              <p>{c.text}</p>
+              <h4>{t(c.titleKey)}</h4>
+              <p>{t(c.textKey)}</p>
             </div>
           ))}
         </div>
 
-        {/* Bottom CTA */}
         <div className="license-bottom-cta">
-          <p>Bereit, deinen Angelschein zu machen?</p>
-          <a
-            href={FISHING_KING_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="license-cta-btn license-cta-btn-lg"
-          >
-            🎓 Jetzt starten
+          <p>{t('license.bottom_cta')}</p>
+          <a href={FISHING_KING_URL} target="_blank" rel="noopener noreferrer" className="license-cta-btn license-cta-btn-lg">
+            🎓 {t('license.start_btn')}
           </a>
-          <span className="license-hint">Öffnet fishing&#8209;king.de in einem neuen Tab</span>
+          <span className="license-hint">{t('license.hint')}</span>
         </div>
 
       </div>

@@ -6,6 +6,7 @@ import {
   getUsers, setUserStatus, updateUserRole, deleteUser, sendUserPasswordReset,
   getSmtp, saveSmtp, testSmtp
 } from '../controllers/admin.controller.js';
+import { getAllTranslations, upsertTranslation, deleteTranslation } from '../controllers/translations.controller.js';
 
 const router = Router();
 
@@ -24,5 +25,9 @@ router.delete('/users/:id',               deleteUser);
 router.get('/smtp',       getSmtp);
 router.put('/smtp',       saveSmtp);
 router.post('/smtp/test', testSmtp);
+
+router.get('/translations',        getAllTranslations);
+router.put('/translations',        upsertTranslation);
+router.delete('/translations/:key', deleteTranslation);
 
 export default router;

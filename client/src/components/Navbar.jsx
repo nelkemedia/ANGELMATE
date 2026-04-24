@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
 import Avatar from './Avatar';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -23,14 +25,12 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="navbar-links">
-          <NavLink to="/" end><span className="nav-icon">🏠</span><span className="nav-label">Dashboard</span></NavLink>
-          <NavLink to="/catches"><span className="nav-icon">📖</span><span className="nav-label">Fangbuch</span></NavLink>
-          <NavLink to="/spots"><span className="nav-icon">📍</span><span className="nav-label">Spots</span></NavLink>
-          <NavLink to="/forecast"><span className="nav-icon">🌤</span><span className="nav-label">Bissindex</span></NavLink>
-          <NavLink to="/community"><span className="nav-icon">🌍</span><span className="nav-label">Community</span></NavLink>
-          {/* <NavLink to="/license"><span className="nav-icon">📋</span><span className="nav-label">Onlinekurs FK</span></NavLink>
-          <a href="https://www.hejfish.com/?gad_source=1&gad_campaignid=9541949489&gbraid=0AAAAAC0qlLk0B7q8mvReA6GRQGFnH4kPg&gclid=CjwKCAjwqazPBhALEiwAOuXqdNI9VcDRImuN9Rc8jecZpTiKPpzjPcJwZ_skxVLiPIeUx5O9SE4twxoCeYAQAvD_BwE" target="_blank" rel="noreferrer"><span className="nav-icon">🌐</span><span className="nav-label">Angelscheine kaufen</span></a> */}
-          {user?.role === 'ADMIN' && <NavLink to="/admin"><span className="nav-icon">🛡</span><span className="nav-label">Admin</span></NavLink>}
+          <NavLink to="/" end><span className="nav-icon">🏠</span><span className="nav-label">{t('nav.dashboard')}</span></NavLink>
+          <NavLink to="/catches"><span className="nav-icon">📖</span><span className="nav-label">{t('nav.catches')}</span></NavLink>
+          <NavLink to="/spots"><span className="nav-icon">📍</span><span className="nav-label">{t('nav.spots')}</span></NavLink>
+          <NavLink to="/forecast"><span className="nav-icon">🌤</span><span className="nav-label">{t('nav.forecast')}</span></NavLink>
+          <NavLink to="/community"><span className="nav-icon">🌍</span><span className="nav-label">{t('nav.community')}</span></NavLink>
+          {user?.role === 'ADMIN' && <NavLink to="/admin"><span className="nav-icon">🛡</span><span className="nav-label">{t('nav.admin')}</span></NavLink>}
         </div>
 
         <div className="navbar-user navbar-user-desktop">
@@ -38,14 +38,14 @@ export default function Navbar() {
             <Avatar src={user?.avatarBase64} name={user?.name} size={28} className="navbar-avatar" />
             {user?.name}
           </NavLink>
-          <button onClick={handleLogout} className="btn-logout">Abmelden</button>
+          <button onClick={handleLogout} className="btn-logout">{t('nav.logout')}</button>
         </div>
 
         {/* Hamburger */}
         <button
           className={`hamburger ${open ? 'hamburger-open' : ''}`}
           onClick={() => setOpen((o) => !o)}
-          aria-label="Menü"
+          aria-label={t('nav.menu')}
         >
           <span /><span /><span />
         </button>
@@ -63,18 +63,16 @@ export default function Navbar() {
               </div>
             </div>
             <nav className="mobile-nav">
-              <NavLink to="/" end onClick={close}>🏠 Dashboard</NavLink>
-              <NavLink to="/catches" onClick={close}>📖 Fangbuch</NavLink>
-              <NavLink to="/spots" onClick={close}>📍 Angelspots</NavLink>
-              <NavLink to="/forecast" onClick={close}>🌤 Bissindex</NavLink>
-              <NavLink to="/community" onClick={close}>🌍 Community</NavLink>
-              {/* <NavLink to="/license" onClick={close}>📋 Onlinekurs FK</NavLink>
-              <a href="https://www.hejfish.com/?gad_source=1&gad_campaignid=9541949489&gbraid=0AAAAAC0qlLk0B7q8mvReA6GRQGFnH4kPg&gclid=CjwKCAjwqazPBhALEiwAOuXqdNI9VcDRImuN9Rc8jecZpTiKPpzjPcJwZ_skxVLiPIeUx5O9SE4twxoCeYAQAvD_BwE" target="_blank" rel="noreferrer" onClick={close}>🌐 Angelschein kaufen</a>
-              {user?.role === 'ADMIN' && <NavLink to="/admin" onClick={close}>🛡 Admin-Bereich</NavLink>}
-               */}<NavLink to="/profile" onClick={close}>👤 Mein Profil</NavLink>
+              <NavLink to="/" end onClick={close}>🏠 {t('nav.dashboard')}</NavLink>
+              <NavLink to="/catches" onClick={close}>📖 {t('nav.catches')}</NavLink>
+              <NavLink to="/spots" onClick={close}>📍 {t('nav.spots_full')}</NavLink>
+              <NavLink to="/forecast" onClick={close}>🌤 {t('nav.forecast')}</NavLink>
+              <NavLink to="/community" onClick={close}>🌍 {t('nav.community')}</NavLink>
+              {user?.role === 'ADMIN' && <NavLink to="/admin" onClick={close}>🛡 {t('nav.admin')}</NavLink>}
+              <NavLink to="/profile" onClick={close}>👤 {t('nav.profile')}</NavLink>
             </nav>
             <button onClick={handleLogout} className="mobile-logout">
-              🚪 Abmelden
+              🚪 {t('nav.logout')}
             </button>
           </div>
         </div>

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
 
 export default function Report() {
   const { user } = useAuth();
+  const { t } = useT();
 
   const [form, setForm] = useState({
     senderName:  user?.name  ?? '',
@@ -36,80 +38,71 @@ export default function Report() {
 
   return (
     <div className="page impressum-page">
-      <h1 className="impressum-title">🚩 Inhalt melden</h1>
+      <h1 className="impressum-title">🚩 {t('report.title')}</h1>
       <p className="guidelines-intro">
-        Hast du einen Inhalt entdeckt, der gegen unsere{' '}
-        <a href="/guidelines">Community-Richtlinien</a> oder geltendes Recht verstößt?
-        Fülle das Formular aus — wir prüfen deine Meldung schnellstmöglich.
+        {t('report.intro_before_link')}{' '}
+        <a href="/guidelines">{t('report.intro_link')}</a>
+        {t('report.intro_after_link')}
       </p>
 
       {success ? (
         <div className="report-success">
           <div className="report-success-icon">✅</div>
-          <h3>Meldung eingegangen</h3>
-          <p>
-            Vielen Dank für deine Meldung. Wir werden den gemeldeten Inhalt prüfen
-            und uns bei Bedarf bei dir melden.
-          </p>
+          <h3>{t('report.success_title')}</h3>
+          <p>{t('report.success_body')}</p>
           <button className="btn-primary" onClick={() => setSuccess(false)}>
-            Weitere Meldung einreichen
+            {t('report.another')}
           </button>
         </div>
       ) : (
         <form className="report-form" onSubmit={handleSubmit} noValidate>
 
           <div className="report-form-group">
-            <h3 className="report-form-section-title">Deine Angaben</h3>
+            <h3 className="report-form-section-title">{t('report.section_sender')}</h3>
             <div className="field">
-              <label>Name des Antragstellers <span className="field-required">*</span></label>
+              <label>{t('report.field_name')} <span className="field-required">*</span></label>
               <input
                 value={form.senderName}
                 onChange={set('senderName')}
                 required
                 minLength={2}
                 maxLength={120}
-                placeholder="Dein vollständiger Name"
+                placeholder={t('report.field_name_ph')}
               />
             </div>
             <div className="field">
-              <label>Deine E-Mail-Adresse <span className="field-required">*</span></label>
+              <label>{t('report.field_email')} <span className="field-required">*</span></label>
               <input
                 type="email"
                 value={form.senderEmail}
                 onChange={set('senderEmail')}
                 required
                 maxLength={200}
-                placeholder="deine@email.de"
+                placeholder={t('report.field_email_ph')}
               />
             </div>
           </div>
 
           <div className="report-form-group">
-            <h3 className="report-form-section-title">Gemeldeter Inhalt</h3>
+            <h3 className="report-form-section-title">{t('report.section_content')}</h3>
             <div className="field">
-              <label>
-                Beschwerde richtet sich gegen <span className="field-required">*</span>
-              </label>
+              <label>{t('report.field_against')} <span className="field-required">*</span></label>
               <input
                 value={form.against}
                 onChange={set('against')}
                 required
                 minLength={2}
                 maxLength={200}
-                placeholder="z. B. Nutzername, Fangbucheintrag, Kommentar …"
+                placeholder={t('report.field_against_ph')}
               />
-              <span className="field-hint">
-                Bitte so genau wie möglich beschreiben (Nutzername, Inhaltsart, Datum).
-              </span>
+              <span className="field-hint">{t('report.field_against_hint')}</span>
             </div>
           </div>
 
           <div className="report-form-group">
-            <h3 className="report-form-section-title">Begründung</h3>
+            <h3 className="report-form-section-title">{t('report.section_reason')}</h3>
             <div className="field">
-              <label>
-                Beschreibe den Verstoß <span className="field-required">*</span>
-              </label>
+              <label>{t('report.field_reason')} <span className="field-required">*</span></label>
               <textarea
                 value={form.reason}
                 onChange={set('reason')}
@@ -117,30 +110,25 @@ export default function Report() {
                 minLength={10}
                 maxLength={5000}
                 rows={8}
-                placeholder="Beschreibe bitte so detailliert wie möglich, warum dieser Inhalt gemeldet wird. Was genau wurde veröffentlicht? Warum verstößt es gegen die Richtlinien oder das Gesetz?"
+                placeholder={t('report.field_reason_ph')}
               />
               <span className="field-hint" style={{ justifyContent: 'space-between' }}>
-                <span>Mindestens 10 Zeichen</span>
+                <span>{t('report.field_min_chars')}</span>
                 <span>{form.reason.length} / 5000</span>
               </span>
             </div>
           </div>
 
-          {errorMsg && (
-            <div className="error-msg">⚠️ {errorMsg}</div>
-          )}
+          {errorMsg && <div className="error-msg">⚠️ {errorMsg}</div>}
 
           <div className="report-form-footer">
-            <p className="report-privacy-note">
-              🔒 Deine Angaben werden vertraulich behandelt und ausschließlich zur
-              Bearbeitung dieser Meldung verwendet.
-            </p>
+            <p className="report-privacy-note">{t('report.privacy_note')}</p>
             <button
               type="submit"
               className="btn-primary report-submit-btn"
               disabled={sending || !form.against.trim() || form.reason.trim().length < 10}
             >
-              {sending ? '⏳ Wird gesendet…' : '🚩 Meldung abschicken'}
+              {sending ? `⏳ ${t('report.submitting')}` : `🚩 ${t('report.submit')}`}
             </button>
           </div>
 

@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
 
 function useLockBody(active) {
   useEffect(() => {
@@ -7,8 +10,6 @@ function useLockBody(active) {
     return () => document.body.classList.remove('has-modal');
   }, [active]);
 }
-import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
 
 const EMPTY_FORM = {
   title: '', description: '', latitude: '', longitude: '', visibility: 'private', targetSpecies: ''
@@ -16,6 +17,7 @@ const EMPTY_FORM = {
 
 export default function Spots() {
   const { user } = useAuth();
+  const { t } = useT();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -109,14 +111,14 @@ export default function Spots() {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Spot wirklich löschen? 🗑️')) return;
+    if (!confirm(t('spots.delete_confirm'))) return;
     try { await api.spots.delete(id); load(); }
     catch (e) { setError(e.message); }
   }
 
   function useGps() {
     if (!navigator.geolocation) {
-      setFormError('Geolocation wird von diesem Browser nicht unterstützt.');
+      setFormError(t('spots.geo_unsupported'));
       return;
     }
     setGpsLoading(true);
@@ -127,8 +129,6 @@ export default function Spots() {
       async (pos) => {
         const lat = Math.round(pos.coords.latitude * 100000) / 100000;
         const lng = Math.round(pos.coords.longitude * 100000) / 100000;
-
-        // Reverse geocoding via Nominatim (kostenlos, kein Key)
         let locationName = '';
         let displayLabel = '';
         try {
@@ -143,20 +143,17 @@ export default function Spots() {
             displayLabel = [water, locationName, a.state].filter(Boolean).join(', ');
           }
         } catch { /* Geocoding optional */ }
-
         setGpsLocation({ lat, lng, label: displayLabel || `${lat}, ${lng}`, fresh: true });
-
         setForm((f) => ({
           ...f,
           latitude: String(lat),
           longitude: String(lng),
-          // Titel nur vorausfüllen wenn noch leer
           title: f.title || locationName || '',
         }));
         setGpsLoading(false);
       },
       () => {
-        setFormError('Standort konnte nicht ermittelt werden. Bitte Zugriff im Browser erlauben.');
+        setFormError(t('spots.geo_error'));
         setGpsLoading(false);
       },
       { timeout: 10000, enableHighAccuracy: true }
@@ -208,36 +205,36 @@ export default function Spots() {
     <div>
       <div className="section-photo-banner section-photo-banner--spots">
         <div className="section-photo-banner-text">
-          <h2>📍 Angelspots</h2>
-          <p>Deine Geheimplätze — und die der Community.</p>
+          <h2>📍 {t('spots.title')}</h2>
+          <p>{t('spots.subtitle')}</p>
         </div>
       </div>
 
       <div className="page">
         <div className="page-header">
           <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            {mySpots.length} eigene Spots
+            {mySpots.length} {t('spots.my_count')}
           </span>
-          <button className="btn-primary" onClick={openAdd}>📍 Neuer Spot</button>
+          <button className="btn-primary" onClick={openAdd}>📍 {t('spots.add_btn')}</button>
         </div>
 
         {error && <div className="error-msg">{error}</div>}
-        {loading && <div className="loading">🗺️ Lade Spots…</div>}
+        {loading && <div className="loading">🗺️ {t('spots.loading')}</div>}
 
         {!loading && (
           <>
             <div className="section">
-              <h3>🔒 Meine Spots ({mySpots.length})</h3>
+              <h3>🔒 {t('spots.my_section')} ({mySpots.length})</h3>
               {mySpots.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-icon">📍</div>
-                  <p>Noch keine Spots gespeichert — wo angelst du am liebsten?</p>
-                  <button className="btn-primary" onClick={openAdd}>📍 Ersten Spot anlegen</button>
+                  <p>{t('spots.empty')}</p>
+                  <button className="btn-primary" onClick={openAdd}>📍 {t('spots.add_first')}</button>
                 </div>
               ) : (
                 <div className="spot-cards">
                   {mySpots.map((s) => (
-                    <SpotCard key={s.id} spot={s} isOwner onEdit={openEdit} onDelete={handleDelete} mapsUrl={mapsUrl} />
+                    <SpotCard key={s.id} spot={s} isOwner t={t} onEdit={openEdit} onDelete={handleDelete} mapsUrl={mapsUrl} />
                   ))}
                 </div>
               )}
@@ -245,10 +242,10 @@ export default function Spots() {
 
             {publicSpots.length > 0 && (
               <div className="section">
-                <h3>🌐 Community Spots ({publicSpots.length})</h3>
+                <h3>🌐 {t('spots.community_section')} ({publicSpots.length})</h3>
                 <div className="spot-cards">
                   {publicSpots.map((s) => (
-                    <SpotCard key={s.id} spot={s} isOwner={false} mapsUrl={mapsUrl} />
+                    <SpotCard key={s.id} spot={s} isOwner={false} t={t} mapsUrl={mapsUrl} />
                   ))}
                 </div>
               </div>
@@ -261,20 +258,20 @@ export default function Spots() {
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{modal === 'add' ? '📍 Neuer Spot' : '✏️ Spot bearbeiten'}</h3>
+              <h3>{modal === 'add' ? `📍 ${t('spots.modal_add')}` : `✏️ ${t('spots.modal_edit')}`}</h3>
               <button className="modal-close" onClick={() => setModal(null)}>✕</button>
             </div>
             <form onSubmit={handleSave}>
               <div className="field">
-                <label>Name *</label>
-                <input value={form.title} onChange={set('title')} required minLength={2} placeholder="z.B. Geheimspot Ammersee Nordseite" />
+                <label>{t('spots.field_name')} *</label>
+                <input value={form.title} onChange={set('title')} required minLength={2} placeholder={t('spots.field_name_ph')} />
               </div>
               <div className="field">
-                <label>Beschreibung</label>
-                <textarea value={form.description} onChange={set('description')} rows={3} placeholder="Tipps, beste Jahreszeiten, Besonderheiten…" maxLength={1000} />
+                <label>{t('spots.field_desc')}</label>
+                <textarea value={form.description} onChange={set('description')} rows={3} placeholder={t('spots.field_desc_ph')} maxLength={1000} />
               </div>
               <div className="field">
-                <label>Ort suchen</label>
+                <label>{t('spots.field_search')}</label>
                 <div className="location-search-row">
                   <input
                     ref={searchRef}
@@ -282,16 +279,14 @@ export default function Spots() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); searchLocation(e); } }}
-                    placeholder="z.B. Ammersee, Bodensee, Isar München"
+                    placeholder={t('spots.field_search_ph')}
                     autoComplete="off"
                   />
                   <button type="button" className="btn-gps" onClick={searchLocation} disabled={searchLoading || !searchQuery.trim()}>
-                    {searchLoading ? '⏳' : '🔍 Suchen'}
+                    {searchLoading ? '⏳' : `🔍 ${t('spots.search_btn')}`}
                   </button>
                 </div>
-                {searchLoading && (
-                  <div className="gps-status gps-loading">⏳ Suche läuft…</div>
-                )}
+                {searchLoading && <div className="gps-status gps-loading">⏳ {t('spots.searching')}</div>}
                 {searchResults.length > 0 && (
                   <ul className="location-results">
                     {searchResults.map((r) => (
@@ -304,41 +299,37 @@ export default function Spots() {
                 )}
               </div>
               <div className="field">
-                <label>Koordinaten *</label>
+                <label>{t('spots.field_coords')} *</label>
                 <div className="coords-row">
-                  <input type="number" step="any" min="-90" max="90" value={form.latitude} onChange={set('latitude')} required placeholder="Breite: 48.1351" />
-                  <input type="number" step="any" min="-180" max="180" value={form.longitude} onChange={set('longitude')} required placeholder="Länge: 11.5820" />
-                  <button type="button" className="btn-gps" onClick={useGps} disabled={gpsLoading} title="GPS verwenden">
-                    {gpsLoading ? '⏳' : '📍 GPS'}
+                  <input type="number" step="any" min="-90" max="90" value={form.latitude} onChange={set('latitude')} required placeholder="48.1351" />
+                  <input type="number" step="any" min="-180" max="180" value={form.longitude} onChange={set('longitude')} required placeholder="11.5820" />
+                  <button type="button" className="btn-gps" onClick={useGps} disabled={gpsLoading} title={t('spots.gps_btn')}>
+                    {gpsLoading ? '⏳' : `📍 ${t('spots.gps_btn')}`}
                   </button>
                 </div>
-                {gpsLoading && (
-                  <div className="gps-status gps-loading">⏳ Standort wird ermittelt…</div>
-                )}
+                {gpsLoading && <div className="gps-status gps-loading">⏳ {t('spots.gps_loading')}</div>}
                 {gpsLocation && !gpsLoading && (
-                  <div className="gps-status gps-success">
-                    📍 {gpsLocation.fresh ? '' : 'Gespeichert: '}{gpsLocation.label}
-                  </div>
+                  <div className="gps-status gps-success">📍 {gpsLocation.label}</div>
                 )}
               </div>
               <div className="form-row">
                 <div className="field">
-                  <label>Sichtbarkeit</label>
+                  <label>{t('spots.field_visibility')}</label>
                   <select value={form.visibility} onChange={set('visibility')}>
-                    <option value="private">🔒 Privat</option>
-                    <option value="public">🌐 Öffentlich</option>
+                    <option value="private">🔒 {t('spots.private')}</option>
+                    <option value="public">🌐 {t('common.public')}</option>
                   </select>
                 </div>
                 <div className="field">
-                  <label>Zielarten (kommagetrennt)</label>
-                  <input value={form.targetSpecies} onChange={set('targetSpecies')} placeholder="Hecht, Barsch, Zander" />
+                  <label>{t('spots.field_species')}</label>
+                  <input value={form.targetSpecies} onChange={set('targetSpecies')} placeholder={t('spots.field_species_ph')} />
                 </div>
               </div>
               {formError && <div className="error-msg">⚠️ {formError}</div>}
               <div className="modal-actions">
-                <button type="button" className="btn-ghost" onClick={() => setModal(null)}>Abbrechen</button>
+                <button type="button" className="btn-ghost" onClick={() => setModal(null)}>{t('common.cancel')}</button>
                 <button type="submit" className="btn-primary" disabled={saving}>
-                  {saving ? '⏳ Speichern…' : '💾 Speichern'}
+                  {saving ? `⏳ ${t('common.saving')}` : `💾 ${t('common.save')}`}
                 </button>
               </div>
             </form>
@@ -349,7 +340,7 @@ export default function Spots() {
   );
 }
 
-function SpotCard({ spot, isOwner, onEdit, onDelete, mapsUrl }) {
+function SpotCard({ spot, isOwner, t, onEdit, onDelete, mapsUrl }) {
   return (
     <div className="spot-card">
       <div className="spot-card-stripe" />
@@ -357,7 +348,7 @@ function SpotCard({ spot, isOwner, onEdit, onDelete, mapsUrl }) {
         <div className="spot-card-header">
           <span className="spot-title">📍 {spot.title}</span>
           <span className={`badge-visibility ${spot.visibility}`}>
-            {spot.visibility === 'public' ? '🌐 Öffentlich' : '🔒 Privat'}
+            {spot.visibility === 'public' ? `🌐 ${t('common.public')}` : `🔒 ${t('spots.private')}`}
           </span>
         </div>
         {spot.description && <div className="spot-desc">{spot.description}</div>}
@@ -369,14 +360,14 @@ function SpotCard({ spot, isOwner, onEdit, onDelete, mapsUrl }) {
         <div className="spot-coords">
           🗺️{' '}
           <a href={mapsUrl(spot.latitude, spot.longitude)} target="_blank" rel="noreferrer">
-            {Number(spot.latitude).toFixed(4)}, {Number(spot.longitude).toFixed(4)} — Google Maps öffnen
+            {Number(spot.latitude).toFixed(4)}, {Number(spot.longitude).toFixed(4)} — {t('spots.open_maps')}
           </a>
         </div>
       </div>
       {isOwner && (
         <div className="spot-card-actions">
-          <button className="btn-ghost" onClick={() => onEdit(spot)}>✏️ Bearbeiten</button>
-          <button className="btn-danger-ghost" onClick={() => onDelete(spot.id)}>🗑️ Löschen</button>
+          <button className="btn-ghost" onClick={() => onEdit(spot)}>✏️ {t('common.edit')}</button>
+          <button className="btn-danger-ghost" onClick={() => onDelete(spot.id)}>🗑️ {t('common.delete')}</button>
         </div>
       )}
     </div>

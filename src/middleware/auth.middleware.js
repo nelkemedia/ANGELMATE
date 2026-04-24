@@ -10,7 +10,7 @@ export const optionalAuth = async (req, _res, next) => {
     const decoded = verifyToken(token);
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, homeRegion: true, skillLevel: true, createdAt: true, avatarBase64: true, role: true }
+      select: { id: true, email: true, name: true, homeRegion: true, skillLevel: true, language: true, createdAt: true, avatarBase64: true, role: true }
     });
     if (user) req.user = user;
   } catch { /* ignore */ }
@@ -36,6 +36,7 @@ export const protect = async (req, _res, next) => {
         name: true,
         homeRegion: true,
         skillLevel: true,
+        language: true,
         createdAt: true,
         avatarBase64: true,
         role: true

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
 import { api } from '../api/client';
 
 export default function Auth() {
@@ -11,10 +12,11 @@ export default function Auth() {
   const [forgotDone, setForgotDone] = useState(false);
   const [forgotEmail,setForgotEmail]= useState('');
   const { login, register } = useAuth();
+  const { t } = useT();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: '', email: '', password: '', homeRegion: '', skillLevel: 'beginner'
+    name: '', email: '', password: '', homeRegion: '', skillLevel: 'beginner', language: 'de'
   });
 
   function set(field) {
@@ -34,7 +36,7 @@ export default function Auth() {
         await login(form.email, form.password);
         navigate('/');
       } else {
-        const payload = { name: form.name, email: form.email, password: form.password };
+        const payload = { name: form.name, email: form.email, password: form.password, language: form.language };
         if (form.homeRegion) payload.homeRegion = form.homeRegion;
         if (form.skillLevel) payload.skillLevel = form.skillLevel;
         await register(payload);
@@ -42,7 +44,8 @@ export default function Auth() {
       }
     } catch (err) {
       if (err.status === 403) setBlocked(true);
-      setError(err.message);
+      const msg = err.code ? t(`error.${err.code.toLowerCase()}`) : err.message;
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -55,16 +58,16 @@ export default function Auth() {
       <div className="auth-split">
         <div className="auth-hero-text">
           <h1>
-            <span>Dein digitales</span>
-            <span>Angelbuch. 🎣</span>
+            <span>{t('auth.hero_line1')}</span>
+            <span>{t('auth.hero_line2')}</span>
           </h1>
-          <p>Tracke jeden Fang, entdecke die besten Spots und check den Bissindex — alles in einer App.</p>
+          <p>{t('auth.hero_subtitle')}</p>
           <ul className="auth-features">
-            <li>🐟 Fangbuch mit Fotos & Notizen</li>
-            <li>📍 Geheime & öffentliche Angelspots</li>
-            <li>🌤 Tagesaktueller Bissindex</li>
-            <li>📊 Persönliche Statistiken & Rekorde</li>
-            <li>🏆 Wer hat den größten Fang?</li>
+            <li>{t('auth.feature_1')}</li>
+            <li>{t('auth.feature_2')}</li>
+            <li>{t('auth.feature_3')}</li>
+            <li>{t('auth.feature_4')}</li>
+            <li>{t('auth.feature_5')}</li>
           </ul>
         </div>
 
@@ -72,13 +75,13 @@ export default function Auth() {
           <div className="auth-card-logo">🎣</div>
           <h2>AngelMate</h2>
           <p className="auth-card-sub">
-            {mode === 'login' ? 'Schön, dass du wieder da bist! 👋' : 'Werde Teil der Angler-Community!'}
+            {mode === 'login' ? t('auth.login_welcome') : t('auth.register_welcome')}
           </p>
 
           {mode !== 'forgot' && (
             <div className="auth-tabs">
-              <button className={mode === 'login'    ? 'active' : ''} onClick={() => switchMode('login')}>Anmelden</button>
-              <button className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>Registrieren</button>
+              <button className={mode === 'login'    ? 'active' : ''} onClick={() => switchMode('login')}>{t('auth.tab_login')}</button>
+              <button className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>{t('auth.tab_register')}</button>
             </div>
           )}
 
@@ -86,24 +89,24 @@ export default function Auth() {
             forgotDone ? (
               <div className="forgot-done">
                 <p style={{ fontSize: '2rem' }}>📬</p>
-                <p><strong>E-Mail unterwegs!</strong></p>
-                <p>Falls die Adresse registriert ist, erhältst du in Kürze einen Link zum Zurücksetzen deines Passworts.</p>
-                <button className="auth-link-btn" onClick={() => switchMode('login')}>← Zurück zur Anmeldung</button>
+                <p><strong>{t('auth.forgot_sent_title')}</strong></p>
+                <p>{t('auth.forgot_sent_body')}</p>
+                <button className="auth-link-btn" onClick={() => switchMode('login')}>← {t('auth.back_to_login')}</button>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
                 <p className="auth-card-sub" style={{ marginBottom: '1rem' }}>
-                  Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen deines Passworts.
+                  {t('auth.forgot_intro')}
                 </p>
                 <div className="field">
-                  <label>E-Mail</label>
+                  <label>{t('auth.email')}</label>
                   <input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} required placeholder="name@beispiel.de" />
                 </div>
                 {error && <div className="error-msg">⚠️ {error}</div>}
                 <button type="submit" className="btn-primary btn-full" disabled={loading}>
-                  {loading ? '⏳ Bitte warten…' : '📧 Reset-Link senden'}
+                  {loading ? `⏳ ${t('auth.loading')}` : `📧 ${t('auth.forgot_send_btn')}`}
                 </button>
-                <button type="button" className="auth-link-btn" onClick={() => switchMode('login')}>← Zurück zur Anmeldung</button>
+                <button type="button" className="auth-link-btn" onClick={() => switchMode('login')}>← {t('auth.back_to_login')}</button>
               </form>
             )
           ) : (
@@ -111,36 +114,44 @@ export default function Auth() {
               {mode === 'register' && (
                 <>
                   <div className="field">
-                    <label>Dein Name</label>
+                    <label>{t('auth.name')}</label>
                     <input value={form.name} onChange={set('name')} required minLength={2} placeholder="Max Mustermann" />
                   </div>
                   <div className="field">
-                    <label>Heimatregion</label>
-                    <input value={form.homeRegion} onChange={set('homeRegion')} placeholder="z.B. Bayern, Nordsee, Bodensee …" />
+                    <label>{t('auth.home_region')}</label>
+                    <input value={form.homeRegion} onChange={set('homeRegion')} placeholder={t('auth.home_region_placeholder')} />
                   </div>
                   <div className="field">
-                    <label>Erfahrungslevel</label>
+                    <label>{t('auth.skill_level')}</label>
                     <select value={form.skillLevel} onChange={set('skillLevel')}>
-                      <option value="beginner">🐣 Anfänger</option>
-                      <option value="intermediate">🎯 Fortgeschritten</option>
-                      <option value="advanced">🏆 Profi</option>
+                      <option value="beginner">🐣 {t('skill.beginner')}</option>
+                      <option value="intermediate">🎯 {t('skill.intermediate')}</option>
+                      <option value="advanced">🏆 {t('skill.advanced')}</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label>{t('auth.language')}</label>
+                    <select value={form.language} onChange={set('language')}>
+                      <option value="de">🇩🇪 Deutsch</option>
+                      <option value="en">🇬🇧 English</option>
+                      <option value="fr">🇫🇷 Français</option>
                     </select>
                   </div>
                 </>
               )}
               <div className="field">
-                <label>E-Mail</label>
+                <label>{t('auth.email')}</label>
                 <input type="email" value={form.email} onChange={set('email')} required placeholder="name@beispiel.de" />
               </div>
               <div className="field">
-                <label>Passwort</label>
-                <input type="password" value={form.password} onChange={set('password')} required minLength={8} placeholder="Mindestens 8 Zeichen" />
+                <label>{t('auth.password')}</label>
+                <input type="password" value={form.password} onChange={set('password')} required minLength={8} placeholder={t('auth.password_placeholder')} />
               </div>
 
               {mode === 'login' && (
                 <div style={{ textAlign: 'right', marginBottom: '0.5rem' }}>
                   <button type="button" className="auth-link-btn" onClick={() => switchMode('forgot')}>
-                    Passwort vergessen?
+                    {t('auth.forgot_password')}
                   </button>
                 </div>
               )}
@@ -148,13 +159,13 @@ export default function Auth() {
               {blocked && (
                 <div className="error-msg error-msg-blocked">
                   <div className="error-msg-blocked-icon">🚫</div>
-                  <div><strong>Konto gesperrt</strong><p>{error}</p></div>
+                  <div><strong>{t('auth.account_blocked')}</strong><p>{error}</p></div>
                 </div>
               )}
               {!blocked && error && <div className="error-msg">⚠️ {error}</div>}
 
               <button type="submit" className="btn-primary btn-full" disabled={loading}>
-                {loading ? '⏳ Bitte warten…' : mode === 'login' ? '🎣 Anmelden & Angeln!' : '🚀 Konto erstellen'}
+                {loading ? `⏳ ${t('auth.loading')}` : mode === 'login' ? `🎣 ${t('auth.login_btn')}` : `🚀 ${t('auth.register_btn')}`}
               </button>
             </form>
           )}

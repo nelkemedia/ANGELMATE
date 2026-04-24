@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { TranslationProvider, useT } from './context/TranslationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Auth from './pages/Auth';
@@ -17,6 +18,7 @@ import Privacy from './pages/Privacy';
 import Admin from './pages/Admin';
 import ResetPassword from './pages/ResetPassword';
 import Footer from './components/Footer';
+import UpdatePrompt from './components/UpdatePrompt';
 
 function Layout({ children }) {
   return (
@@ -38,7 +40,8 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   const { user, loading } = useAuth();
-  if (loading) return <div className="fullscreen-loading">Lade…</div>;
+  const { t } = useT();
+  if (loading) return <div className="fullscreen-loading">{t('common.loading')}</div>;
 
   return (
     <Routes>
@@ -78,8 +81,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+      <UpdatePrompt />
       <AuthProvider>
-        <AppRoutes />
+        <TranslationProvider>
+          <AppRoutes />
+        </TranslationProvider>
       </AuthProvider>
     </BrowserRouter>
   );

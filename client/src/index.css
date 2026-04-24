@@ -1908,6 +1908,38 @@ input, select, textarea { font: inherit; }
   .smtp-row, .smtp-row-3 { grid-template-columns: 1fr; }
 }
 
+/* Translations Tab */
+.trans-add-form { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+.trans-add-title { font-size: 0.95rem; font-weight: 700; color: var(--green); margin: 0 0 0.75rem; }
+.trans-add-row { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr auto; gap: 0.5rem; align-items: start; }
+.trans-add-key { font-family: monospace; font-size: 0.85rem; }
+.trans-add-val { font-size: 0.85rem; }
+.trans-filter-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.trans-ns-select { padding: 0.35rem 0.65rem; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; background: var(--surface); color: var(--text); }
+.trans-table { table-layout: fixed; }
+.trans-table th:first-child  { width: 28%; }
+.trans-table th:nth-child(2),
+.trans-table th:nth-child(3),
+.trans-table th:nth-child(4) { width: 22%; }
+.trans-table th:last-child   { width: 8%; }
+.trans-key-cell { vertical-align: top; }
+.trans-key { font-size: 0.78rem; background: var(--green-light); color: var(--green); padding: 0.15rem 0.4rem; border-radius: 4px; word-break: break-all; }
+.trans-val-cell { font-size: 0.82rem; color: var(--text); cursor: pointer; vertical-align: top; white-space: pre-wrap; word-break: break-word; }
+.trans-val-cell:hover { background: var(--green-light); }
+.trans-cell-input { width: 100%; font-size: 0.82rem; border: 1.5px solid var(--green); border-radius: var(--radius); padding: 0.3rem 0.45rem; resize: vertical; font-family: inherit; }
+.trans-row-editing td { background: #f0fdf4 !important; }
+.trans-actions-cell { vertical-align: top; }
+.trans-row-btns { display: flex; gap: 0.25rem; justify-content: flex-end; }
+@media (max-width: 860px) {
+  .trans-add-row { grid-template-columns: 1fr 1fr; }
+  .trans-add-row button { grid-column: 1 / -1; }
+  .trans-table { font-size: 0.78rem; }
+  .trans-table th:first-child { width: 35%; }
+  .trans-table th:nth-child(2),
+  .trans-table th:nth-child(3),
+  .trans-table th:nth-child(4) { width: 18%; }
+}
+
 /* Admin users table */
 .admin-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }

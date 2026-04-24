@@ -12,7 +12,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   homeRegion: z.string().max(120).optional(),
-  skillLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional()
+  skillLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  language: z.enum(['de', 'en', 'fr']).optional()
 });
 
 const loginSchema = z.object({
@@ -25,7 +26,7 @@ export const register = catchAsync(async (req, res) => {
 
   const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
   if (existingUser) {
-    throw new AppError('Email already registered', 409);
+    throw new AppError('Email already registered', 409, 'ERROR_EMAIL_TAKEN');
   }
 
   const passwordHash = await bcrypt.hash(data.password, 12);
@@ -36,11 +37,12 @@ export const register = catchAsync(async (req, res) => {
       email: data.email,
       passwordHash,
       homeRegion: data.homeRegion,
-      skillLevel: data.skillLevel || 'beginner'
+      skillLevel: data.skillLevel || 'beginner',
+      language: data.language || 'de'
     },
     select: {
       id: true, name: true, email: true,
-      homeRegion: true, skillLevel: true, createdAt: true, avatarBase64: true, role: true
+      homeRegion: true, skillLevel: true, language: true, createdAt: true, avatarBase64: true, role: true
     }
   });
 
@@ -56,16 +58,16 @@ export const login = catchAsync(async (req, res) => {
     include: { userStatus: { select: { status: true } } }
   });
   if (!user) {
-    throw new AppError('Invalid credentials', 401);
+    throw new AppError('Invalid credentials', 401, 'ERROR_INVALID_CREDENTIALS');
   }
 
   const isValid = await bcrypt.compare(data.password, user.passwordHash);
   if (!isValid) {
-    throw new AppError('Invalid credentials', 401);
+    throw new AppError('Invalid credentials', 401, 'ERROR_INVALID_CREDENTIALS');
   }
 
   if (user.userStatus?.status === 'INACTIVE') {
-    throw new AppError('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator.', 403);
+    throw new AppError('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator.', 403, 'ERROR_ACCOUNT_INACTIVE');
   }
 
   const token = signToken({ userId: user.id });
@@ -78,6 +80,7 @@ export const login = catchAsync(async (req, res) => {
       email: user.email,
       homeRegion: user.homeRegion,
       skillLevel: user.skillLevel,
+      language: user.language,
       createdAt: user.createdAt,
       avatarBase64: user.avatarBase64,
       role:         user.role
@@ -89,12 +92,13 @@ export const me = catchAsync(async (req, res) => {
   res.json({ user: req.user });
 });
 
-const USER_SELECT = { id: true, name: true, email: true, homeRegion: true, skillLevel: true, createdAt: true, avatarBase64: true, role: true };
+const USER_SELECT = { id: true, name: true, email: true, homeRegion: true, skillLevel: true, language: true, createdAt: true, avatarBase64: true, role: true };
 
 const updateProfileSchema = z.object({
   name: z.string().min(2).max(80).optional(),
   homeRegion: z.string().max(120).nullable().optional(),
   skillLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  language: z.enum(['de', 'en', 'fr']).optional(),
   avatarBase64: z.string().nullable().optional()
 });
 
@@ -146,7 +150,7 @@ export const forgotPassword = catchAsync(async (req, res) => {
   const base      = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const resetLink = `${base}/reset-password?token=${token}`;
 
-  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink });
+  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink, lang: user.language || 'de' });
   res.json(ok);
 });
 

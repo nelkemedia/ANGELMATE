@@ -1,32 +1,24 @@
 import { useRef, useState } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useT } from '../context/TranslationContext';
+import { toLocaleTag } from '../utils/locale';
 import Avatar from '../components/Avatar';
 
-const SKILL_OPTIONS = [
-  { value: 'beginner',     label: '🐣 Anfänger' },
-  { value: 'intermediate', label: '🎯 Fortgeschritten' },
-  { value: 'advanced',     label: '🏆 Profi' },
-];
-
-// Center-crop to square, scale down to maxSide, return JPEG data-URL
 function resizeToBase64(file, maxSide = 128, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      // Source: center-square in the ORIGINAL pixel space
       const origSide = Math.min(img.width, img.height);
       const srcX = (img.width  - origSide) / 2;
       const srcY = (img.height - origSide) / 2;
-      // Destination: cap at maxSide
       const canvasSide = Math.min(origSide, maxSide);
       const canvas = document.createElement('canvas');
       canvas.width  = canvasSide;
       canvas.height = canvasSide;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, srcX, srcY, origSide, origSide, 0, 0, canvasSide, canvasSide);
+      canvas.getContext('2d').drawImage(img, srcX, srcY, origSide, origSide, 0, 0, canvasSide, canvasSide);
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = reject;
@@ -36,6 +28,7 @@ function resizeToBase64(file, maxSide = 128, quality = 0.75) {
 
 export default function Profile() {
   const { user, updateUser, logout } = useAuth();
+  const { t, locale } = useT();
   const fileRef = useRef(null);
 
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarBase64 ?? null);
@@ -46,6 +39,7 @@ export default function Profile() {
     name:       user?.name       ?? '',
     homeRegion: user?.homeRegion ?? '',
     skillLevel: user?.skillLevel ?? 'beginner',
+    language:   user?.language   ?? 'de',
   });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg,    setProfileMsg]    = useState(null);
@@ -68,9 +62,9 @@ export default function Profile() {
       setAvatarPreview(b64);
       const data = await api.auth.updateProfile({ avatarBase64: b64 });
       updateUser(data.user);
-      setAvatarMsg({ type: 'success', text: '✅ Profilbild gespeichert!' });
+      setAvatarMsg({ type: 'success', text: `✅ ${t('profile.avatar_saved')}` });
     } catch (err) {
-      setAvatarMsg({ type: 'error', text: `⚠️ ${err.message ?? 'Bild konnte nicht gespeichert werden.'}` });
+      setAvatarMsg({ type: 'error', text: `⚠️ ${err.message ?? t('profile.avatar_error')}` });
     } finally {
       setAvatarSaving(false);
     }
@@ -83,7 +77,7 @@ export default function Profile() {
       const data = await api.auth.updateProfile({ avatarBase64: null });
       updateUser(data.user);
       setAvatarPreview(null);
-      setAvatarMsg({ type: 'success', text: '✅ Profilbild entfernt.' });
+      setAvatarMsg({ type: 'success', text: `✅ ${t('profile.avatar_removed')}` });
     } catch (err) {
       setAvatarMsg({ type: 'error', text: `⚠️ ${err.message}` });
     } finally {
@@ -100,10 +94,11 @@ export default function Profile() {
         name:       profileForm.name,
         skillLevel: profileForm.skillLevel,
         homeRegion: profileForm.homeRegion || null,
+        language:   profileForm.language,
       };
       const data = await api.auth.updateProfile(payload);
       updateUser(data.user);
-      setProfileMsg({ type: 'success', text: '✅ Profil erfolgreich gespeichert!' });
+      setProfileMsg({ type: 'success', text: `✅ ${t('profile.saved_ok')}` });
     } catch (e) {
       setProfileMsg({ type: 'error', text: `⚠️ ${e.message}` });
     } finally {
@@ -114,14 +109,14 @@ export default function Profile() {
   async function handlePasswordSave(e) {
     e.preventDefault();
     if (pwForm.newPassword !== pwForm.confirmPassword) {
-      setPwMsg({ type: 'error', text: '⚠️ Die neuen Passwörter stimmen nicht überein.' });
+      setPwMsg({ type: 'error', text: `⚠️ ${t('profile.pw_mismatch')}` });
       return;
     }
     setPwSaving(true);
     setPwMsg(null);
     try {
       await api.auth.changePassword({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword });
-      setPwMsg({ type: 'success', text: '✅ Passwort erfolgreich geändert!' });
+      setPwMsg({ type: 'success', text: `✅ ${t('profile.pw_changed_ok')}` });
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (e) {
       setPwMsg({ type: 'error', text: `⚠️ ${e.message}` });
@@ -130,16 +125,15 @@ export default function Profile() {
     }
   }
 
-  const skillLabel   = SKILL_OPTIONS.find((o) => o.value === user?.skillLevel)?.label ?? user?.skillLevel;
-  const memberSince  = user?.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('de-DE', { year: 'numeric', month: 'long' })
+  const skillLabel  = t(`skill.${user?.skillLevel ?? 'beginner'}`);
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(toLocaleTag(locale), { year: 'numeric', month: 'long' })
     : '–';
 
   return (
     <div>
-      {/* Hero */}
       <div className="profile-hero">
-        <div className="profile-avatar-hero-wrap" onClick={() => fileRef.current?.click()} title="Foto ändern">
+        <div className="profile-avatar-hero-wrap" onClick={() => fileRef.current?.click()} title={t('profile.avatar_change')}>
           <Avatar src={avatarPreview} name={user?.name} size={72} className="profile-avatar-hero" />
           <div className="profile-avatar-edit-badge">📷</div>
         </div>
@@ -151,40 +145,38 @@ export default function Profile() {
             <span>{skillLabel}</span>
             {user?.homeRegion && <><span className="profile-hero-dot">·</span><span>📍 {user.homeRegion}</span></>}
           </div>
-          <div className="profile-hero-since">Dabei seit {memberSince}</div>
+          <div className="profile-hero-since">{t('profile.member_since', { date: memberSince })}</div>
         </div>
       </div>
 
       <div className="page">
 
-        {/* Avatar upload card */}
+        {/* Avatar */}
         <div className="profile-card">
           <div className="profile-card-header">
             <span className="profile-card-icon">📷</span>
             <div>
-              <h3>Profilbild</h3>
-              <p>JPG oder PNG · wird auf 128 × 128 px zugeschnitten</p>
+              <h3>{t('profile.avatar_title')}</h3>
+              <p>{t('profile.avatar_hint')}</p>
             </div>
           </div>
-
           <div className="avatar-editor">
-            <div className="avatar-editor-preview" onClick={() => fileRef.current?.click()} title="Foto auswählen">
+            <div className="avatar-editor-preview" onClick={() => fileRef.current?.click()} title={t('profile.avatar_select')}>
               <Avatar src={avatarPreview} name={user?.name} size={96} className="avatar-editor-img" />
               <div className="avatar-editor-overlay">📷</div>
             </div>
             <div className="avatar-editor-actions">
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
               <button className="btn-primary" onClick={() => fileRef.current?.click()} disabled={avatarSaving}>
-                {avatarSaving ? '⏳ Wird gespeichert…' : '🖼 Foto auswählen'}
+                {avatarSaving ? `⏳ ${t('common.saving')}` : `🖼 ${t('profile.avatar_select')}`}
               </button>
               {avatarPreview && !avatarSaving && (
                 <button className="btn-ghost" onClick={handleAvatarRemove} disabled={avatarSaving}>
-                  🗑 Entfernen
+                  🗑 {t('common.remove')}
                 </button>
               )}
             </div>
           </div>
-
           {avatarMsg && (
             <div className={`${avatarMsg.type === 'success' ? 'success-msg' : 'error-msg'}`} style={{ marginTop: '0.75rem' }}>
               {avatarMsg.text}
@@ -197,23 +189,33 @@ export default function Profile() {
           <div className="profile-card-header">
             <span className="profile-card-icon">👤</span>
             <div>
-              <h3>Profil bearbeiten</h3>
-              <p>Name, Heimatregion und Erfahrungslevel</p>
+              <h3>{t('profile.edit_title')}</h3>
+              <p>{t('profile.edit_subtitle')}</p>
             </div>
           </div>
           <form onSubmit={handleProfileSave}>
             <div className="field">
-              <label>Name</label>
-              <input value={profileForm.name} onChange={setP('name')} required minLength={2} maxLength={80} placeholder="Dein Name" />
+              <label>{t('auth.name')}</label>
+              <input value={profileForm.name} onChange={setP('name')} required minLength={2} maxLength={80} placeholder={t('auth.name')} />
             </div>
             <div className="field">
-              <label>Heimatregion</label>
-              <input value={profileForm.homeRegion} onChange={setP('homeRegion')} maxLength={120} placeholder="z.B. Bayern, Bodensee, Nordsee …" />
+              <label>{t('auth.home_region')}</label>
+              <input value={profileForm.homeRegion} onChange={setP('homeRegion')} maxLength={120} placeholder={t('auth.home_region_placeholder')} />
             </div>
             <div className="field">
-              <label>Erfahrungslevel</label>
+              <label>{t('auth.skill_level')}</label>
               <select value={profileForm.skillLevel} onChange={setP('skillLevel')}>
-                {SKILL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                <option value="beginner">🐣 {t('skill.beginner')}</option>
+                <option value="intermediate">🎯 {t('skill.intermediate')}</option>
+                <option value="advanced">🏆 {t('skill.advanced')}</option>
+              </select>
+            </div>
+            <div className="field">
+              <label>{t('auth.language')}</label>
+              <select value={profileForm.language} onChange={setP('language')}>
+                <option value="de">🇩🇪 Deutsch</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="fr">🇫🇷 Français</option>
               </select>
             </div>
             {profileMsg && (
@@ -221,7 +223,7 @@ export default function Profile() {
             )}
             <div className="profile-card-actions">
               <button type="submit" className="btn-primary" disabled={profileSaving}>
-                {profileSaving ? '⏳ Speichern…' : '💾 Speichern'}
+                {profileSaving ? `⏳ ${t('common.saving')}` : `💾 ${t('common.save')}`}
               </button>
             </div>
           </form>
@@ -231,27 +233,27 @@ export default function Profile() {
         <div className="profile-card">
           <div className="profile-card-header">
             <span className="profile-card-icon">🔒</span>
-            <div><h3>Passwort ändern</h3><p>Mindestens 8 Zeichen</p></div>
+            <div><h3>{t('profile.pw_title')}</h3><p>{t('profile.pw_subtitle')}</p></div>
           </div>
           <form onSubmit={handlePasswordSave}>
             <div className="field">
-              <label>Aktuelles Passwort</label>
+              <label>{t('profile.pw_current')}</label>
               <input type="password" value={pwForm.currentPassword} onChange={setW('currentPassword')} required placeholder="••••••••" />
             </div>
             <div className="field">
-              <label>Neues Passwort</label>
-              <input type="password" value={pwForm.newPassword} onChange={setW('newPassword')} required minLength={8} placeholder="Mindestens 8 Zeichen" />
+              <label>{t('profile.pw_new')}</label>
+              <input type="password" value={pwForm.newPassword} onChange={setW('newPassword')} required minLength={8} placeholder={t('auth.password_placeholder')} />
             </div>
             <div className="field">
-              <label>Neues Passwort bestätigen</label>
-              <input type="password" value={pwForm.confirmPassword} onChange={setW('confirmPassword')} required minLength={8} placeholder="Passwort wiederholen" />
+              <label>{t('profile.pw_confirm')}</label>
+              <input type="password" value={pwForm.confirmPassword} onChange={setW('confirmPassword')} required minLength={8} placeholder={t('profile.pw_repeat')} />
             </div>
             {pwMsg && (
               <div className={pwMsg.type === 'success' ? 'success-msg' : 'error-msg'}>{pwMsg.text}</div>
             )}
             <div className="profile-card-actions">
               <button type="submit" className="btn-primary" disabled={pwSaving}>
-                {pwSaving ? '⏳ Ändern…' : '🔑 Passwort ändern'}
+                {pwSaving ? `⏳ ${t('common.saving')}` : `🔑 ${t('profile.pw_btn')}`}
               </button>
             </div>
           </form>
@@ -261,19 +263,19 @@ export default function Profile() {
         <div className="profile-card profile-card-info">
           <div className="profile-card-header">
             <span className="profile-card-icon">ℹ️</span>
-            <div><h3>Konto-Informationen</h3><p>Schreibgeschützte Daten</p></div>
+            <div><h3>{t('profile.info_title')}</h3><p>{t('profile.info_subtitle')}</p></div>
           </div>
           <div className="profile-info-rows">
             <div className="profile-info-row">
-              <span className="pir-label">E-Mail</span>
+              <span className="pir-label">{t('auth.email')}</span>
               <span className="pir-value">{user?.email}</span>
             </div>
             <div className="profile-info-row">
-              <span className="pir-label">Nutzer-ID</span>
+              <span className="pir-label">{t('profile.user_id')}</span>
               <span className="pir-value pir-mono">{user?.id}</span>
             </div>
             <div className="profile-info-row">
-              <span className="pir-label">Dabei seit</span>
+              <span className="pir-label">{t('profile.member_since_label')}</span>
               <span className="pir-value">{memberSince}</span>
             </div>
           </div>
@@ -283,9 +285,9 @@ export default function Profile() {
         <div className="profile-card profile-card-danger">
           <div className="profile-card-header">
             <span className="profile-card-icon">🚪</span>
-            <div><h3>Abmelden</h3><p>Du wirst auf die Anmeldeseite weitergeleitet.</p></div>
+            <div><h3>{t('profile.logout_title')}</h3><p>{t('profile.logout_subtitle')}</p></div>
           </div>
-          <button className="btn-danger" onClick={logout}>🚪 Jetzt abmelden</button>
+          <button className="btn-danger" onClick={logout}>🚪 {t('nav.logout')}</button>
         </div>
 
       </div>

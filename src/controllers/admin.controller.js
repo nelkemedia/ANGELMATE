@@ -92,7 +92,7 @@ export const setUserStatus = catchAsync(async (req, res) => {
 
 export const sendUserPasswordReset = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, name: true, language: true } });
   if (!user) throw new AppError('Nutzer nicht gefunden.', 404);
 
   await prisma.passwordResetToken.deleteMany({ where: { userId: id } });
@@ -106,7 +106,7 @@ export const sendUserPasswordReset = catchAsync(async (req, res) => {
   const base      = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const resetLink = `${base}/reset-password?token=${token}`;
 
-  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink });
+  await sendPasswordResetMail({ to: user.email, name: user.name, resetLink, lang: user.language || 'de' });
   res.json({ message: `Reset-E-Mail an ${user.email} gesendet.` });
 });
 

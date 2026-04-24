@@ -1,31 +1,38 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
+import { useT } from '../context/TranslationContext';
+import { toLocaleTag } from '../utils/locale';
 
 export default function Admin() {
+  const { t } = useT();
   const [tab, setTab] = useState('reports');
 
   return (
     <div className="page">
       <div className="admin-header">
-        <h1 className="admin-title">🛡 Admin-Bereich</h1>
-        <p className="admin-subtitle">Meldungen und Nutzerverwaltung</p>
+        <h1 className="admin-title">🛡 {t('admin.title')}</h1>
+        <p className="admin-subtitle">{t('admin.subtitle')}</p>
       </div>
 
       <div className="community-tabs">
-        <button className={`community-tab ${tab === 'reports' ? 'community-tab-active' : ''}`} onClick={() => setTab('reports')}>
-          🚩 Meldungen
+        <button className={`community-tab ${tab === 'reports'      ? 'community-tab-active' : ''}`} onClick={() => setTab('reports')}>
+          🚩 {t('admin.tab_reports')}
         </button>
-        <button className={`community-tab ${tab === 'users' ? 'community-tab-active' : ''}`} onClick={() => setTab('users')}>
-          👥 Nutzer
+        <button className={`community-tab ${tab === 'users'        ? 'community-tab-active' : ''}`} onClick={() => setTab('users')}>
+          👥 {t('admin.tab_users')}
         </button>
-        <button className={`community-tab ${tab === 'smtp' ? 'community-tab-active' : ''}`} onClick={() => setTab('smtp')}>
-          📧 E-Mail
+        <button className={`community-tab ${tab === 'smtp'         ? 'community-tab-active' : ''}`} onClick={() => setTab('smtp')}>
+          📧 {t('admin.tab_smtp')}
+        </button>
+        <button className={`community-tab ${tab === 'translations' ? 'community-tab-active' : ''}`} onClick={() => setTab('translations')}>
+          🌐 {t('admin.tab_translations')}
         </button>
       </div>
 
-      {tab === 'reports' && <ReportsTab />}
-      {tab === 'users'   && <UsersTab />}
-      {tab === 'smtp'    && <SmtpTab />}
+      {tab === 'reports'      && <ReportsTab />}
+      {tab === 'users'        && <UsersTab />}
+      {tab === 'smtp'         && <SmtpTab />}
+      {tab === 'translations' && <TranslationsTab />}
     </div>
   );
 }
@@ -33,9 +40,10 @@ export default function Admin() {
 // ── Reports Tab ───────────────────────────────────────────────────────────────
 
 function ReportsTab() {
+  const { t, locale } = useT();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter,  setFilter]  = useState('open'); // 'open' | 'resolved' | 'all'
+  const [filter,  setFilter]  = useState('open');
 
   useEffect(() => {
     api.admin.getReports()
@@ -52,7 +60,7 @@ function ReportsTab() {
   }
 
   async function handleDelete(id) {
-    if (!window.confirm('Meldung wirklich löschen?')) return;
+    if (!window.confirm(t('admin.confirm_delete_report'))) return;
     try {
       await api.admin.deleteReport(id);
       setReports((prev) => prev.filter((r) => r.id !== id));
@@ -60,19 +68,21 @@ function ReportsTab() {
   }
 
   const visible = reports.filter((r) =>
-    filter === 'all'      ? true :
-    filter === 'open'     ? !r.resolved :
-    /* resolved */          r.resolved
+    filter === 'all'  ? true :
+    filter === 'open' ? !r.resolved :
+                        r.resolved
   );
 
-  if (loading) return <div className="loading">Lade Meldungen…</div>;
+  if (loading) return <div className="loading">{t('admin.reports_loading')}</div>;
 
   return (
     <div className="admin-section">
       <div className="admin-filter-row">
-        <span className="admin-count">{reports.filter(r => !r.resolved).length} offen · {reports.filter(r => r.resolved).length} erledigt</span>
+        <span className="admin-count">
+          {t('admin.reports_count', { open: reports.filter(r => !r.resolved).length, resolved: reports.filter(r => r.resolved).length })}
+        </span>
         <div className="admin-filter-btns">
-          {[['open','Offen'],['resolved','Erledigt'],['all','Alle']].map(([v,l]) => (
+          {[['open', t('admin.filter_open')], ['resolved', t('admin.filter_resolved')], ['all', t('admin.filter_all')]].map(([v, l]) => (
             <button
               key={v}
               className={`admin-filter-btn ${filter === v ? 'admin-filter-btn-active' : ''}`}
@@ -84,7 +94,7 @@ function ReportsTab() {
 
       {visible.length === 0 ? (
         <div className="admin-empty">
-          {filter === 'open' ? '✅ Keine offenen Meldungen.' : 'Keine Einträge.'}
+          {filter === 'open' ? t('admin.no_open_reports') : t('admin.no_entries')}
         </div>
       ) : (
         <div className="admin-cards">
@@ -92,29 +102,29 @@ function ReportsTab() {
             <div key={r.id} className={`admin-report-card ${r.resolved ? 'admin-report-resolved' : ''}`}>
               <div className="admin-report-meta">
                 <span className={`admin-badge ${r.resolved ? 'admin-badge-ok' : 'admin-badge-warn'}`}>
-                  {r.resolved ? '✅ Erledigt' : '🔴 Offen'}
+                  {r.resolved ? t('admin.report_resolved') : t('admin.report_open')}
                 </span>
                 <span className="admin-report-date">
-                  {new Date(r.createdAt).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+                  {new Date(r.createdAt).toLocaleString(toLocaleTag(locale), { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
               <div className="admin-report-row">
-                <span className="admin-field-label">Von</span>
+                <span className="admin-field-label">{t('admin.field_from')}</span>
                 <span>{r.senderName} · <a href={`mailto:${r.senderEmail}`} className="app-footer-link">{r.senderEmail}</a></span>
               </div>
               <div className="admin-report-row">
-                <span className="admin-field-label">Gegen</span>
+                <span className="admin-field-label">{t('admin.field_against')}</span>
                 <span className="admin-report-against">{r.against}</span>
               </div>
               <div className="admin-report-row admin-report-reason-row">
-                <span className="admin-field-label">Begründung</span>
+                <span className="admin-field-label">{t('admin.field_reason')}</span>
                 <p className="admin-report-reason">{r.reason}</p>
               </div>
               {r.resolvedAt && (
                 <div className="admin-report-row">
-                  <span className="admin-field-label">Erledigt am</span>
-                  <span>{new Date(r.resolvedAt).toLocaleString('de-DE')}</span>
+                  <span className="admin-field-label">{t('admin.field_resolved_at')}</span>
+                  <span>{new Date(r.resolvedAt).toLocaleString(toLocaleTag(locale))}</span>
                 </div>
               )}
 
@@ -123,10 +133,10 @@ function ReportsTab() {
                   className={r.resolved ? 'btn-ghost admin-btn-sm' : 'btn-primary admin-btn-sm'}
                   onClick={() => handleResolve(r.id)}
                 >
-                  {r.resolved ? '↩ Wieder öffnen' : '✅ Als erledigt markieren'}
+                  {r.resolved ? t('admin.btn_reopen') : t('admin.btn_mark_resolved')}
                 </button>
                 <button className="btn-danger admin-btn-sm" onClick={() => handleDelete(r.id)}>
-                  🗑 Löschen
+                  🗑 {t('common.delete')}
                 </button>
               </div>
             </div>
@@ -140,6 +150,7 @@ function ReportsTab() {
 // ── Action Dropdown ───────────────────────────────────────────────────────────
 
 function ActionDropdown({ u, busy, onStatus, onRole, onReset, onDelete }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [pos,  setPos]  = useState({ top: 0, right: 0 });
   const triggerRef = useRef(null);
@@ -148,22 +159,17 @@ function ActionDropdown({ u, busy, onStatus, onRole, onReset, onDelete }) {
 
   useEffect(() => {
     if (!open) return;
-
-    // Position the fixed menu relative to the trigger button
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
       setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
     }
-
     function onMouseDown(e) {
       if (menuRef.current && !menuRef.current.contains(e.target) &&
           triggerRef.current && !triggerRef.current.contains(e.target)) {
         setOpen(false);
       }
     }
-    // Close on any scroll so the menu doesn't float away from its trigger
     function onScroll() { setOpen(false); }
-
     document.addEventListener('mousedown', onMouseDown);
     window.addEventListener('scroll', onScroll, true);
     return () => {
@@ -181,28 +187,24 @@ function ActionDropdown({ u, busy, onStatus, onRole, onReset, onDelete }) {
         className="user-action-trigger"
         onClick={() => setOpen((o) => !o)}
         disabled={busy}
-        aria-label="Aktionen"
+        aria-label={t('admin.actions_label')}
       >
         {busy ? '…' : '⋯'}
       </button>
       {open && (
-        <div
-          ref={menuRef}
-          className="user-action-items"
-          style={{ top: pos.top, right: pos.right }}
-        >
+        <div ref={menuRef} className="user-action-items" style={{ top: pos.top, right: pos.right }}>
           <button className="user-action-item" onClick={() => act(onStatus)}>
-            {active ? '🔴 Konto sperren' : '✅ Konto aktivieren'}
+            {active ? t('admin.action_deactivate') : t('admin.action_activate')}
           </button>
           <button className="user-action-item" onClick={() => act(onRole)}>
-            {u.role === 'ADMIN' ? '👤 Zu User degradieren' : '🛡 Zu Admin befördern'}
+            {u.role === 'ADMIN' ? t('admin.action_demote') : t('admin.action_promote')}
           </button>
           <button className="user-action-item" onClick={() => act(onReset)}>
-            📧 Passwort-Reset senden
+            {t('admin.action_reset')}
           </button>
           <div className="user-action-divider" />
           <button className="user-action-item user-action-item--danger" onClick={() => act(onDelete)}>
-            🗑 Nutzer löschen
+            {t('admin.action_delete_user')}
           </button>
         </div>
       )}
@@ -213,6 +215,7 @@ function ActionDropdown({ u, busy, onStatus, onRole, onReset, onDelete }) {
 // ── Users Tab ─────────────────────────────────────────────────────────────────
 
 function UsersTab() {
+  const { t, locale } = useT();
   const [users,      setUsers]      = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [actionBusy, setActionBusy] = useState(null);
@@ -231,8 +234,10 @@ function UsersTab() {
 
   async function handleStatusToggle(u) {
     const newStatus = isActive(u) ? 'INACTIVE' : 'ACTIVE';
-    const label     = newStatus === 'INACTIVE' ? 'deaktivieren' : 'aktivieren';
-    if (!window.confirm(`Konto von "${u.name}" wirklich ${label}?`)) return;
+    const confirmMsg = newStatus === 'INACTIVE'
+      ? t('admin.confirm_deactivate', { name: u.name })
+      : t('admin.confirm_activate', { name: u.name });
+    if (!window.confirm(confirmMsg)) return;
     setActionBusy(u.id);
     try {
       await api.admin.setUserStatus(u.id, newStatus);
@@ -245,8 +250,7 @@ function UsersTab() {
 
   async function handleRoleToggle(u) {
     const newRole = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
-    const label   = newRole === 'ADMIN' ? 'Admin' : 'User';
-    if (!window.confirm(`Rolle von "${u.name}" auf ${label} ändern?`)) return;
+    if (!window.confirm(t('admin.confirm_role_change', { name: u.name, role: newRole }))) return;
     setActionBusy(u.id);
     try {
       const d = await api.admin.updateUserRole(u.id, newRole);
@@ -256,7 +260,7 @@ function UsersTab() {
   }
 
   async function handlePasswordReset(u) {
-    if (!window.confirm(`Reset-E-Mail an "${u.email}" senden?`)) return;
+    if (!window.confirm(t('admin.confirm_reset_email', { email: u.email }))) return;
     setActionBusy(u.id);
     try {
       const d = await api.admin.sendPasswordReset(u.id);
@@ -266,7 +270,7 @@ function UsersTab() {
   }
 
   async function handleDelete(u) {
-    if (!window.confirm(`Nutzer "${u.name}" wirklich löschen?\n\nAlle Fänge, Spots und Kommentare werden unwiderruflich entfernt.`)) return;
+    if (!window.confirm(t('admin.confirm_delete_user', { name: u.name }))) return;
     setActionBusy(u.id);
     try {
       await api.admin.deleteUser(u.id);
@@ -275,9 +279,7 @@ function UsersTab() {
     finally { setActionBusy(null); }
   }
 
-  if (loading) return <div className="loading">Lade Nutzer…</div>;
-
-  const SKILL = { beginner: '🐣 Anfänger', intermediate: '🎯 Fortgeschritten', advanced: '🏆 Profi' };
+  if (loading) return <div className="loading">{t('admin.users_loading')}</div>;
 
   const q = search.trim().toLowerCase();
   const visible = q
@@ -288,14 +290,14 @@ function UsersTab() {
     <div className="admin-section">
       <div className="admin-users-toolbar">
         <span className="admin-count">
-          {users.length} Nutzer · {users.filter(u => !isActive(u)).length} deaktiviert
+          {t('admin.users_count', { total: users.length, inactive: users.filter(u => !isActive(u)).length })}
         </span>
         <div className="admin-search-wrap">
           <span className="admin-search-icon">🔍</span>
           <input
             className="admin-search"
             type="search"
-            placeholder="Name oder E-Mail suchen…"
+            placeholder={t('admin.search_placeholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -306,41 +308,41 @@ function UsersTab() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>E-Mail</th>
-              <th>Status</th>
-              <th>Rolle</th>
-              <th>Level</th>
-              <th>Fänge</th>
-              <th>Spots</th>
-              <th>Dabei seit</th>
+              <th>{t('admin.col_name')}</th>
+              <th>{t('admin.col_email')}</th>
+              <th>{t('admin.col_status')}</th>
+              <th>{t('admin.col_role')}</th>
+              <th>{t('admin.col_level')}</th>
+              <th>{t('admin.col_catches')}</th>
+              <th>{t('admin.col_spots')}</th>
+              <th>{t('admin.col_since')}</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {visible.length === 0 && (
-              <tr><td colSpan={9} className="admin-empty">Keine Nutzer gefunden.</td></tr>
+              <tr><td colSpan={9} className="admin-empty">{t('admin.no_users_found')}</td></tr>
             )}
             {visible.map((u) => {
               const active = isActive(u);
               return (
                 <tr key={u.id} className={!active ? 'admin-row-inactive' : ''}>
-                  <td data-label="Name"><strong>{u.name}</strong></td>
-                  <td data-label="E-Mail"><a href={`mailto:${u.email}`} className="app-footer-link">{u.email}</a></td>
-                  <td data-label="Status">
+                  <td data-label={t('admin.col_name')}><strong>{u.name}</strong></td>
+                  <td data-label={t('admin.col_email')}><a href={`mailto:${u.email}`} className="app-footer-link">{u.email}</a></td>
+                  <td data-label={t('admin.col_status')}>
                     <span className={`admin-badge ${active ? 'admin-badge-ok' : 'admin-badge-warn'}`}>
-                      {active ? '✅ Aktiv' : '🔴 Inaktiv'}
+                      {active ? t('admin.status_active') : t('admin.status_inactive')}
                     </span>
                   </td>
-                  <td data-label="Rolle">
+                  <td data-label={t('admin.col_role')}>
                     <span className={`admin-badge ${u.role === 'ADMIN' ? 'admin-badge-admin' : 'admin-badge-user'}`}>
-                      {u.role === 'ADMIN' ? '🛡 Admin' : '👤 User'}
+                      {u.role === 'ADMIN' ? `🛡 ${t('admin.role_admin')}` : `👤 ${t('admin.role_user')}`}
                     </span>
                   </td>
-                  <td data-label="Level">{SKILL[u.skillLevel] ?? u.skillLevel}</td>
-                  <td data-label="Fänge">{u._count.catches}</td>
-                  <td data-label="Spots">{u._count.spots}</td>
-                  <td data-label="Dabei seit">{new Date(u.createdAt).toLocaleDateString('de-DE')}</td>
+                  <td data-label={t('admin.col_level')}>{t(`skill.${u.skillLevel}`)}</td>
+                  <td data-label={t('admin.col_catches')}>{u._count.catches}</td>
+                  <td data-label={t('admin.col_spots')}>{u._count.spots}</td>
+                  <td data-label={t('admin.col_since')}>{new Date(u.createdAt).toLocaleDateString(toLocaleTag(locale))}</td>
                   <td>
                     <ActionDropdown
                       u={u}
@@ -366,13 +368,14 @@ function UsersTab() {
 const MASK = '••••••••';
 
 function SmtpTab() {
+  const { t } = useT();
   const empty = { host: '', port: 587, user: '', password: '', fromName: 'AngelMate', fromAddress: '', secure: false };
-  const [form,       setForm]       = useState(empty);
-  const [loading,    setLoading]    = useState(true);
-  const [saving,     setSaving]     = useState(false);
-  const [testing,    setTesting]    = useState(false);
-  const [saveMsg,    setSaveMsg]    = useState(null); // { ok, text }
-  const [testMsg,    setTestMsg]    = useState(null); // { ok, text }
+  const [form,    setForm]    = useState(empty);
+  const [loading, setLoading] = useState(true);
+  const [saving,  setSaving]  = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [saveMsg, setSaveMsg] = useState(null);
+  const [testMsg, setTestMsg] = useState(null);
 
   useEffect(() => {
     api.admin.getSmtp()
@@ -403,7 +406,7 @@ function SmtpTab() {
     try {
       const d = await api.admin.saveSmtp(form);
       setForm(d.settings);
-      setSaveMsg({ ok: true, text: 'Einstellungen gespeichert.' });
+      setSaveMsg({ ok: true, text: t('admin.smtp_saved') });
     } catch (err) {
       setSaveMsg({ ok: false, text: err.message });
     } finally { setSaving(false); }
@@ -419,47 +422,45 @@ function SmtpTab() {
     } finally { setTesting(false); }
   }
 
-  if (loading) return <div className="loading">Lade SMTP-Einstellungen…</div>;
+  if (loading) return <div className="loading">{t('admin.smtp_loading')}</div>;
 
   return (
     <div className="admin-section">
       <div className="smtp-card">
-        <h3 className="smtp-title">📧 E-Mail / SMTP Konfiguration</h3>
+        <h3 className="smtp-title">📧 {t('admin.smtp_title')}</h3>
         <p className="admin-count" style={{ marginBottom: '1.5rem' }}>
-          Diese Einstellungen werden für den Versand von Passwort-Reset-E-Mails verwendet.
+          {t('admin.smtp_desc')}
         </p>
 
         <form onSubmit={handleSubmit} className="smtp-form">
-
-          {/* Host + Port + SSL in einer Gruppe */}
           <div className="smtp-row smtp-row-3">
             <div className="field" style={{ flex: 2 }}>
-              <label>SMTP Host</label>
+              <label>{t('admin.smtp_host')}</label>
               <input value={form.host} onChange={set('host')} placeholder="mail.gmx.net" />
             </div>
             <div className="field">
-              <label>Port <span className="smtp-port-hint">587 STARTTLS · 465 SSL</span></label>
+              <label>{t('admin.smtp_port')} <span className="smtp-port-hint">587 STARTTLS · 465 SSL</span></label>
               <input type="number" value={form.port} onChange={set('port')} min={1} max={65535} />
             </div>
             <div className="field smtp-field-ssl">
-              <label>Verschlüsselung</label>
+              <label>{t('admin.smtp_ssl_label')}</label>
               <label className="smtp-checkbox-label">
                 <input type="checkbox" checked={form.secure} onChange={set('secure')} />
-                SSL/TLS (statt STARTTLS)
+                {t('admin.smtp_ssl_check')}
               </label>
             </div>
           </div>
 
           <div className="smtp-row">
             <div className="field">
-              <label>Benutzername</label>
+              <label>{t('admin.smtp_user')}</label>
               <input value={form.user} onChange={set('user')} placeholder="user@example.com" autoComplete="off" />
             </div>
             <div className="field">
-              <label>Passwort</label>
+              <label>{t('admin.smtp_password')}</label>
               <input
                 type="password" value={form.password} onChange={set('password')}
-                placeholder={form.password === MASK ? 'gesetzt – leer lassen zum Beibehalten' : 'SMTP-Passwort'}
+                placeholder={form.password === MASK ? t('admin.smtp_password_set') : t('admin.smtp_password_ph')}
                 autoComplete="new-password"
               />
             </div>
@@ -467,11 +468,11 @@ function SmtpTab() {
 
           <div className="smtp-row">
             <div className="field">
-              <label>Absender-Name</label>
+              <label>{t('admin.smtp_from_name')}</label>
               <input value={form.fromName} onChange={set('fromName')} placeholder="AngelMate" />
             </div>
             <div className="field">
-              <label>Absender-Adresse</label>
+              <label>{t('admin.smtp_from_address')}</label>
               <input type="email" value={form.fromAddress} onChange={set('fromAddress')} placeholder="noreply@example.com" />
             </div>
           </div>
@@ -484,10 +485,10 @@ function SmtpTab() {
 
           <div className="smtp-actions">
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? '⏳ Speichern…' : '💾 Einstellungen speichern'}
+              {saving ? `⏳ ${t('admin.smtp_saving')}` : `💾 ${t('admin.smtp_save')}`}
             </button>
             <button type="button" className="btn-ghost smtp-test-btn" onClick={handleTest} disabled={testing || saving}>
-              {testing ? '⏳ Sende…' : '📨 Test-Mail senden'}
+              {testing ? `⏳ ${t('admin.smtp_testing')}` : `📨 ${t('admin.smtp_test')}`}
             </button>
           </div>
 
@@ -497,6 +498,183 @@ function SmtpTab() {
             </div>
           )}
         </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Translations Tab ──────────────────────────────────────────────────────────
+
+function TranslationsTab() {
+  const { t, refetch } = useT();
+  const [data,      setData]      = useState({});
+  const [loading,   setLoading]   = useState(true);
+  const [nsFilter,  setNsFilter]  = useState('');
+  const [editRow,   setEditRow]   = useState(null);
+  const [editVals,  setEditVals]  = useState({ de: '', en: '', fr: '' });
+  const [savingRow, setSavingRow] = useState(null);
+  const [newKey,    setNewKey]    = useState('');
+  const [newVals,   setNewVals]   = useState({ de: '', en: '', fr: '' });
+  const [adding,    setAdding]    = useState(false);
+  const [addError,  setAddError]  = useState('');
+
+  async function load() {
+    setLoading(true);
+    try {
+      const d = await api.admin.getTranslations();
+      setData(d.translations ?? {});
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  const namespaces = [...new Set(Object.keys(data).map((k) => k.split('.')[0]))].sort();
+
+  const rows = Object.entries(data)
+    .filter(([key]) => !nsFilter || key.startsWith(nsFilter + '.'))
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  function startEdit(key, vals) {
+    setEditRow(key);
+    setEditVals({ de: vals.de ?? '', en: vals.en ?? '', fr: vals.fr ?? '' });
+  }
+
+  function cancelEdit() {
+    setEditRow(null);
+    setEditVals({ de: '', en: '', fr: '' });
+  }
+
+  async function saveRow(key) {
+    setSavingRow(key);
+    try {
+      await api.admin.upsertTranslation({ key, translations: editVals });
+      setData((prev) => ({ ...prev, [key]: { ...editVals } }));
+      setEditRow(null);
+      refetch();
+    } catch (e) { alert(e.message); }
+    finally { setSavingRow(null); }
+  }
+
+  async function deleteRow(key) {
+    if (!window.confirm(t('admin.trans_confirm_delete', { key }))) return;
+    try {
+      await api.admin.deleteTranslation(key);
+      setData((prev) => { const n = { ...prev }; delete n[key]; return n; });
+      if (editRow === key) cancelEdit();
+      refetch();
+    } catch (e) { alert(e.message); }
+  }
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    const k = newKey.trim();
+    if (!k) return;
+    if (data[k] !== undefined) { setAddError(t('admin.trans_key_exists')); return; }
+    setAdding(true);
+    setAddError('');
+    try {
+      await api.admin.upsertTranslation({ key: k, translations: newVals });
+      setData((prev) => ({ ...prev, [k]: { ...newVals } }));
+      setNewKey('');
+      setNewVals({ de: '', en: '', fr: '' });
+      refetch();
+    } catch (e) { setAddError(e.message); }
+    finally { setAdding(false); }
+  }
+
+  if (loading) return <div className="loading">{t('admin.trans_loading')}</div>;
+
+  return (
+    <div className="admin-section">
+
+      {/* Add new key */}
+      <form onSubmit={handleAdd} className="trans-add-form">
+        <h4 className="trans-add-title">➕ {t('admin.trans_new_key')}</h4>
+        <div className="trans-add-row">
+          <input
+            className="trans-add-key"
+            value={newKey}
+            onChange={(e) => { setNewKey(e.target.value); setAddError(''); }}
+            placeholder="nav.example_key"
+            required
+          />
+          <input className="trans-add-val" value={newVals.de} onChange={(e) => setNewVals((v) => ({ ...v, de: e.target.value }))} placeholder="🇩🇪 DE" />
+          <input className="trans-add-val" value={newVals.en} onChange={(e) => setNewVals((v) => ({ ...v, en: e.target.value }))} placeholder="🇬🇧 EN" />
+          <input className="trans-add-val" value={newVals.fr} onChange={(e) => setNewVals((v) => ({ ...v, fr: e.target.value }))} placeholder="🇫🇷 FR" />
+          <button type="submit" className="btn-primary admin-btn-sm" disabled={adding}>
+            {adding ? `⏳ ${t('common.saving')}` : `➕ ${t('common.add')}`}
+          </button>
+        </div>
+        {addError && <div className="error-msg" style={{ marginTop: '0.5rem' }}>⚠️ {addError}</div>}
+      </form>
+
+      {/* Namespace filter */}
+      <div className="trans-filter-row">
+        <select className="trans-ns-select" value={nsFilter} onChange={(e) => setNsFilter(e.target.value)}>
+          <option value="">{t('admin.trans_all_ns')}</option>
+          {namespaces.map((ns) => <option key={ns} value={ns}>{ns}.*</option>)}
+        </select>
+        <span className="admin-count">{rows.length} {t('admin.trans_keys_count')}</span>
+      </div>
+
+      {/* Table */}
+      <div className="admin-table-wrap">
+        <table className="admin-table trans-table">
+          <thead>
+            <tr>
+              <th>{t('admin.trans_col_key')}</th>
+              <th>🇩🇪 {t('admin.trans_col_de')}</th>
+              <th>🇬🇧 {t('admin.trans_col_en')}</th>
+              <th>🇫🇷 {t('admin.trans_col_fr')}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr><td colSpan={5} className="admin-empty">{t('admin.trans_no_results')}</td></tr>
+            )}
+            {rows.map(([key, vals]) => {
+              const isEditing = editRow === key;
+              const isSaving  = savingRow === key;
+              return (
+                <tr key={key} className={isEditing ? 'trans-row-editing' : ''}>
+                  <td className="trans-key-cell">
+                    <code className="trans-key">{key}</code>
+                  </td>
+                  {isEditing ? (
+                    <>
+                      <td><textarea className="trans-cell-input" value={editVals.de} onChange={(e) => setEditVals((v) => ({ ...v, de: e.target.value }))} rows={2} /></td>
+                      <td><textarea className="trans-cell-input" value={editVals.en} onChange={(e) => setEditVals((v) => ({ ...v, en: e.target.value }))} rows={2} /></td>
+                      <td><textarea className="trans-cell-input" value={editVals.fr} onChange={(e) => setEditVals((v) => ({ ...v, fr: e.target.value }))} rows={2} /></td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="trans-val-cell" onClick={() => startEdit(key, vals)}>{vals.de ?? ''}</td>
+                      <td className="trans-val-cell" onClick={() => startEdit(key, vals)}>{vals.en ?? ''}</td>
+                      <td className="trans-val-cell" onClick={() => startEdit(key, vals)}>{vals.fr ?? ''}</td>
+                    </>
+                  )}
+                  <td className="trans-actions-cell">
+                    {isEditing ? (
+                      <div className="trans-row-btns">
+                        <button className="btn-primary admin-btn-sm" onClick={() => saveRow(key)} disabled={isSaving}>
+                          {isSaving ? '⏳' : '💾'}
+                        </button>
+                        <button className="btn-ghost admin-btn-sm" onClick={cancelEdit}>✕</button>
+                      </div>
+                    ) : (
+                      <div className="trans-row-btns">
+                        <button className="btn-ghost admin-btn-sm" onClick={() => startEdit(key, vals)} title={t('common.edit')}>✏️</button>
+                        <button className="btn-danger-ghost admin-btn-sm" onClick={() => deleteRow(key)} title={t('common.delete')}>🗑</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
