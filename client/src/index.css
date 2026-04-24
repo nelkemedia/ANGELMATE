@@ -21,15 +21,15 @@
   --shadow-md: 0 6px 20px rgba(0,0,0,.12);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.18);
 
-  /* Photos — all verified 200 OK */
-  --photo-hero:      url('https://images.unsplash.com/photo-1541742425281-c1d3fc8aff96?w=1600&q=80&auto=format&fit=crop');
-  --photo-dashboard: url('https://images.unsplash.com/photo-1633017042064-9efa46ff8135?w=1400&q=80&auto=format&fit=crop');
-  --photo-catches:   url('https://images.unsplash.com/photo-1689709105115-e11810b6c425?w=1200&q=80&auto=format&fit=crop');
-  --photo-fish:      url('https://images.unsplash.com/photo-1649260664200-d92b3ad50a49?w=800&q=80&auto=format&fit=crop');
-  --photo-spots:     url('https://images.unsplash.com/photo-1710273330112-1461aa903ac7?w=1200&q=80&auto=format&fit=crop');
-  --photo-forecast:  url('https://images.unsplash.com/photo-1663637157615-69759105d1fe?w=1200&q=80&auto=format&fit=crop');
-  --photo-community: url('https://images.unsplash.com/photo-1566528226211-090651acf06c?w=1200&q=80&auto=format&fit=crop');
-  --photo-profile:   url('https://images.unsplash.com/photo-1551131618-3f0a5cf594b4?w=1200&q=80&auto=format&fit=crop');
+  /* Photos — served locally from /images/ */
+  --photo-hero:      url('/images/hero.jpg');
+  --photo-dashboard: url('/images/dashboard.jpg');
+  --photo-catches:   url('/images/catches.jpg');
+  --photo-fish:      url('/images/fish.jpg');
+  --photo-spots:     url('/images/spots.jpg');
+  --photo-forecast:  url('/images/forecast.jpg');
+  --photo-community: url('/images/community.jpg');
+  --photo-profile:   url('/images/profile.jpg');
 }
 
 /* ── Reset ── */

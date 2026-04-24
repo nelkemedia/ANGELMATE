@@ -21,7 +21,24 @@ import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          'https://nominatim.openstreetmap.org',
+          'https://api.open-meteo.com',
+        ],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'blob:'],
+        fontSrc: ["'self'"],
+      },
+    },
+  })
+);
 app.use(cors());
 app.use(express.json({ limit: '10mb' })); // larger limit for base64 images
 app.use(morgan('dev'));
