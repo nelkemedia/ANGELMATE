@@ -62,8 +62,9 @@ export const api = {
     getReports:    ()   => request('/admin/reports'),
     resolveReport: (id) => request(`/admin/reports/${id}/resolve`, { method: 'PATCH' }),
     deleteReport:  (id) => request(`/admin/reports/${id}`, { method: 'DELETE' }),
-    getUsers:      ()   => request('/admin/users'),
-    deleteUser:    (id) => request(`/admin/users/${id}`, { method: 'DELETE' })
+    getUsers:      ()          => request('/admin/users'),
+    updateUserRole:(id, role) => request(`/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+    deleteUser:    (id)        => request(`/admin/users/${id}`, { method: 'DELETE' })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>

@@ -53,11 +53,26 @@ export const getUsers = catchAsync(async (_req, res) => {
 
 export const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
-  // Prevent deleting yourself
   if (id === req.user.id) throw new AppError('Du kannst dein eigenes Konto nicht löschen.', 400);
 
   await prisma.user.delete({ where: { id } }).catch(() => {
     throw new AppError('User not found', 404);
   });
   res.status(204).end();
+});
+
+export const updateUserRole = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (id === req.user.id) throw new AppError('Du kannst deine eigene Rolle nicht ändern.', 400);
+  if (!['ADMIN', 'USER'].includes(role)) throw new AppError('Ungültige Rolle. Erlaubt: ADMIN, USER', 400);
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { role },
+    select: { id: true, name: true, email: true, role: true }
+  }).catch(() => { throw new AppError('Nutzer nicht gefunden.', 404); });
+
+  res.json({ user });
 });

@@ -1825,6 +1825,7 @@ input, select, textarea { font: inherit; }
   display: flex; gap: 0.5rem; margin-top: 0.85rem; flex-wrap: wrap;
 }
 .admin-btn-sm { padding: 0.35rem 0.85rem; font-size: 0.82rem; border-radius: 8px; }
+.admin-actions-cell { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
 
 /* Admin users table */
 .admin-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }

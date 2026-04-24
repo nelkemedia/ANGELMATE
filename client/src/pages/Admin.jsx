@@ -143,6 +143,7 @@ function ReportsTab() {
 function UsersTab() {
   const [users,   setUsers]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(null);
 
   useEffect(() => {
     api.admin.getUsers()
@@ -150,6 +151,18 @@ function UsersTab() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleRoleToggle(u) {
+    const newRole = u.role === 'ADMIN' ? 'USER' : 'ADMIN';
+    const label   = newRole === 'ADMIN' ? 'Admin' : 'User';
+    if (!window.confirm(`Rolle von "${u.name}" auf ${label} ändern?`)) return;
+    setRoleLoading(u.id);
+    try {
+      const d = await api.admin.updateUserRole(u.id, newRole);
+      setUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, role: d.user.role } : x));
+    } catch (e) { alert(e.message); }
+    finally { setRoleLoading(null); }
+  }
 
   async function handleDelete(id, name) {
     if (!window.confirm(`Nutzer "${name}" wirklich löschen? Alle Fänge, Spots und Kommentare werden unwiderruflich entfernt.`)) return;
@@ -194,7 +207,15 @@ function UsersTab() {
                 <td data-label="Fänge">{u._count.catches}</td>
                 <td data-label="Spots">{u._count.spots}</td>
                 <td data-label="Dabei seit">{new Date(u.createdAt).toLocaleDateString('de-DE')}</td>
-                <td data-label="">
+                <td data-label="" className="admin-actions-cell">
+                  <button
+                    className={`admin-btn-sm ${u.role === 'ADMIN' ? 'btn-ghost' : 'btn-primary'}`}
+                    onClick={() => handleRoleToggle(u)}
+                    disabled={roleLoading === u.id}
+                    title={u.role === 'ADMIN' ? 'Zu User degradieren' : 'Zu Admin befördern'}
+                  >
+                    {roleLoading === u.id ? '…' : u.role === 'ADMIN' ? '👤 User' : '🛡 Admin'}
+                  </button>
                   {u.role !== 'ADMIN' && (
                     <button className="btn-danger admin-btn-sm" onClick={() => handleDelete(u.id, u.name)}>
                       🗑
