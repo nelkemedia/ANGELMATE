@@ -145,7 +145,7 @@ const KEYS = [
   { key:'spots.add_btn',           de:'Spot hinzufügen',              en:'Add spot',                    fr:'Ajouter un spot' },
   { key:'spots.add_first',         de:'Ersten Spot hinzufügen',       en:'Add your first spot',         fr:'Ajouter votre premier spot' },
   { key:'spots.my_section',        de:'Meine Spots',                  en:'My spots',                    fr:'Mes spots' },
-  { key:'spots.my_count',          de:'{{count}} Spot(s)',            en:'{{count}} spot(s)',            fr:'{{count}} spot(s)' },
+  { key:'spots.my_count',          de:' Spot(s)',            en:' spot(s)',            fr:' spot(s)' },
   { key:'spots.community_section', de:'Community-Spots',              en:'Community spots',             fr:'Spots communautaires' },
   { key:'spots.modal_add',         de:'Neuen Spot hinzufügen',        en:'Add new spot',                fr:'Ajouter un nouveau spot' },
   { key:'spots.modal_edit',        de:'Spot bearbeiten',              en:'Edit spot',                   fr:'Modifier le spot' },

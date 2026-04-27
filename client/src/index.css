@@ -2034,7 +2034,8 @@ body.has-modal { overflow: hidden; }
   padding-left:  max(2rem, env(safe-area-inset-left));
   padding-right: max(2rem, env(safe-area-inset-right));
 }
-.app-footer {
+.app-footer,
+.app-footer-v2 {
   padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
 }
 .modal-overlay {
@@ -2354,19 +2355,22 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .bottom-nav {
     display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-    height: 64px; background: #fff; border-top: 1px solid #e5e7eb;
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: #fff; border-top: 1px solid #e5e7eb;
     box-shadow: 0 -2px 12px rgba(0,0,0,.08); z-index: 200;
   }
   .bn-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     flex: 1; gap: 0.18rem; color: #9ca3af; text-decoration: none;
     font-size: 0.62rem; font-weight: 600; padding: 0.35rem 0; transition: color .2s;
+    min-height: 44px;
   }
   .bn-item:hover, .bn-item.active { color: var(--green); text-decoration: none; }
-  .navbar { height: 56px; padding: 0 1rem; }
+  .navbar { height: 56px; padding-left: 1rem; padding-right: 1rem; padding-bottom: 0; }
   .navbar-links { display: none; }
   .hamburger { display: none !important; }
-  .app-main, .page { padding-bottom: calc(64px + 1.5rem); }
+  .app-main, .page { padding-bottom: calc(64px + 1.5rem + env(safe-area-inset-bottom)); }
   .dashboard-hero { height: 220px; }
   .dashboard-hero-content { bottom: 40px; padding: 1.25rem; }
   .dashboard-hero-content h2 { font-size: 1.35rem; }
