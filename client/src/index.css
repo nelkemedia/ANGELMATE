@@ -52,7 +52,7 @@ input, select, textarea { font: inherit; }
 .navbar {
   display: flex; align-items: center;
   background: #ffffff;
-  color: var(--text); padding: 0 2rem; height: 72px;
+  color: var(--text); padding: 0 2rem; height: calc(72px + env(safe-area-inset-top));
   position: sticky; top: 0; z-index: 100;
   border-bottom: 1px solid #e5e7eb;
   box-shadow: 0 1px 6px rgba(0,0,0,.05);
@@ -2367,10 +2367,11 @@ img { max-width: 100%; height: auto; }
     min-height: 44px;
   }
   .bn-item:hover, .bn-item.active { color: var(--green); text-decoration: none; }
-  .navbar { height: 56px; padding-left: 1rem; padding-right: 1rem; padding-bottom: 0; }
+  .navbar { height: calc(56px + env(safe-area-inset-top)); padding-left: 1rem; padding-right: 1rem; padding-bottom: 0; }
   .navbar-links { display: none; }
   .hamburger { display: none !important; }
   .app-main, .page { padding-bottom: calc(64px + 1.5rem + env(safe-area-inset-bottom)); }
+  .app-footer-v2 { display: none; }
   .dashboard-hero { height: 220px; }
   .dashboard-hero-content { bottom: 40px; padding: 1.25rem; }
   .dashboard-hero-content h2 { font-size: 1.35rem; }
