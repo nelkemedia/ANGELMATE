@@ -19,7 +19,6 @@ import Admin from './pages/Admin';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Footer from './components/Footer';
-import BottomNav from './components/BottomNav';
 import UpdatePrompt from './components/UpdatePrompt';
 
 function Layout({ children }) {
@@ -28,7 +27,6 @@ function Layout({ children }) {
       <Navbar />
       <main>{children}</main>
       <Footer />
-      <BottomNav />
     </div>
   );
 }
