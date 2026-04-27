@@ -3,16 +3,21 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
 export default function RichEditor({ value, onChange, placeholder = '' }) {
-  const containerRef = useRef(null);
-  const quillRef     = useRef(null);
-  const onChangeCb   = useRef(onChange);
+  const wrapperRef  = useRef(null);
+  const quillRef    = useRef(null);
+  const onChangeCb  = useRef(onChange);
   onChangeCb.current = onChange;
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el || quillRef.current) return;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-    quillRef.current = new Quill(el, {
+    // Create a fresh inner div so Quill owns it completely.
+    // The wrapper stays as React's stable anchor.
+    const container = document.createElement('div');
+    wrapper.appendChild(container);
+
+    quillRef.current = new Quill(container, {
       theme: 'snow',
       placeholder,
       modules: {
@@ -33,8 +38,13 @@ export default function RichEditor({ value, onChange, placeholder = '' }) {
       onChangeCb.current(quillRef.current.root.innerHTML);
     });
 
-    return () => { quillRef.current = null; };
-  }, []);
+    return () => {
+      // Clearing innerHTML removes both the toolbar and the container
+      // that Quill inserted, preventing orphaned DOM nodes on remount.
+      wrapper.innerHTML = '';
+      quillRef.current = null;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevValue = useRef(value);
   useEffect(() => {
@@ -45,5 +55,5 @@ export default function RichEditor({ value, onChange, placeholder = '' }) {
     prevValue.current = value;
   }, [value]);
 
-  return <div ref={containerRef} style={{ minHeight: '220px', background: '#fff' }} />;
+  return <div ref={wrapperRef} style={{ minHeight: '220px', background: '#fff' }} />;
 }

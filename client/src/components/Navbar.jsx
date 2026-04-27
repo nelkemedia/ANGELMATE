@@ -23,7 +23,7 @@ export default function Navbar() {
       <nav className="navbar">
         
         <div className="navbar-brand">
-          <NavLink to="/"><span>🎣</span> AngelMate</NavLink>
+          <span>🎣</span> AngelMate
         </div>
 
         {/* Desktop links */}
