@@ -16,64 +16,6 @@ function HeroWave() {
   );
 }
 
-function FishFactIllus() {
-  return (
-    <svg viewBox="0 0 130 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="fun-fact-fish">
-      <ellipse cx="58" cy="40" rx="44" ry="28" fill="rgba(255,255,255,0.12)" />
-      <polygon points="102,40 122,22 122,58" fill="rgba(255,255,255,0.15)" />
-      <circle cx="32" cy="30" r="5.5" fill="rgba(255,255,255,0.3)" />
-      <circle cx="32" cy="30" r="2" fill="rgba(0,0,0,0.15)" />
-      <path d="M42 52 Q56 64 68 58 Q56 70 40 64 Z" fill="rgba(255,255,255,0.07)" />
-      <path d="M58 26 Q78 18 94 28 Q78 42 58 34 Z" fill="rgba(255,255,255,0.08)" />
-    </svg>
-  );
-}
-
-function StatFish() {
-  return (
-    <svg viewBox="0 0 80 52" fill="none" xmlns="http://www.w3.org/2000/svg" className="stat-illus">
-      <ellipse cx="36" cy="26" rx="28" ry="17" fill="rgba(255,255,255,0.18)" />
-      <polygon points="64,26 78,14 78,38" fill="rgba(255,255,255,0.18)" />
-      <circle cx="20" cy="18" r="3.5" fill="rgba(255,255,255,0.35)" />
-      <circle cx="20" cy="18" r="1.4" fill="rgba(0,0,0,0.15)" />
-    </svg>
-  );
-}
-
-function StatFishBlue() {
-  return (
-    <svg viewBox="0 0 80 52" fill="none" xmlns="http://www.w3.org/2000/svg" className="stat-illus">
-      <ellipse cx="36" cy="26" rx="28" ry="17" fill="#e0f5f5" stroke="#0e7c7c" strokeWidth="1.5" />
-      <polygon points="64,26 78,14 78,38" fill="#0e7c7c" opacity="0.65" />
-      <circle cx="20" cy="18" r="3" fill="#0e7c7c" />
-      <circle cx="20" cy="18" r="1.2" fill="white" />
-      <path d="M30 22 Q42 15 54 22 Q42 31 30 22Z" fill="#0a6b6b" opacity="0.2" />
-    </svg>
-  );
-}
-
-function StatLure() {
-  return (
-    <svg viewBox="0 0 80 52" fill="none" xmlns="http://www.w3.org/2000/svg" className="stat-illus">
-      <rect x="14" y="20" width="34" height="12" rx="6" fill="#e0f5f5" stroke="#0e7c7c" strokeWidth="1.5" />
-      <circle cx="11" cy="26" r="4" fill="#0e7c7c" opacity="0.45" />
-      <line x1="48" y1="26" x2="62" y2="26" stroke="#4a7070" strokeWidth="1.5" />
-      <circle cx="63" cy="26" r="2.5" fill="none" stroke="#4a7070" strokeWidth="1.5" />
-      <circle cx="22" cy="22" r="1.5" fill="#0e7c7c" opacity="0.35" />
-      <circle cx="31" cy="20" r="1.2" fill="#0e7c7c" opacity="0.25" />
-      <circle cx="40" cy="20" r="1.2" fill="#0e7c7c" opacity="0.25" />
-    </svg>
-  );
-}
-
-function StatHook() {
-  return (
-    <svg viewBox="0 0 52 72" fill="none" xmlns="http://www.w3.org/2000/svg" className="stat-illus stat-illus--hook">
-      <circle cx="26" cy="10" r="5" fill="none" stroke="#0e7c7c" strokeWidth="2.5" />
-      <path d="M26 15 L26 46 C26 56 16 62 10 56 C6 52 8 46 14 46 C18 46 20 50 17 53" stroke="#0e7c7c" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-    </svg>
-  );
-}
 
 function IconCalendar() {
   return (
@@ -138,7 +80,7 @@ export default function Dashboard() {
             <strong>{t('dashboard.fun_fact_label')}</strong>
             <p>{t(`dashboard.fun_fact_${factIdx}`)}</p>
           </div>
-          <FishFactIllus />
+          <img src="/img/fact-fish.svg" alt="" className="fun-fact-fish" />
         </div>
 
         {error && <div className="error-msg">{error}</div>}
@@ -152,36 +94,36 @@ export default function Dashboard() {
                   <div className="stat-label">GESAMT</div>
                   <div className="stat-sub">{t('dashboard.stat_total')}</div>
                 </div>
-                <StatFish />
+                <img src="/img/stat-fish-white.svg" alt="" className="stat-illus" />
               </div>
 
-              <div className="stat-card">
+              <div className="stat-card stat-card--species">
                 <div className="stat-card-body">
                   <div className="stat-label">LIEBLINGSART</div>
-                  <div className="stat-number" style={{ fontSize: stats.favoriteSpecies && stats.favoriteSpecies.length > 8 ? '1.2rem' : undefined }}>
+                  <div className="stat-number" style={{ fontSize: stats.favoriteSpecies && stats.favoriteSpecies.length > 8 ? '1.1rem' : undefined }}>
                     {stats.favoriteSpecies ?? '–'}
                   </div>
                   <div className="stat-sub">{t('dashboard.stat_favorite')}</div>
                 </div>
-                <StatFishBlue />
+                <img src="/img/stat-fish-teal.svg" alt="" className="stat-illus" />
               </div>
 
-              <div className="stat-card">
+              <div className="stat-card stat-card--weight">
                 <div className="stat-card-body">
                   <div className="stat-label">SCHWERSTER FANG</div>
                   <div className="stat-number">{stats.biggestByWeight ? `${stats.biggestByWeight.weight} kg` : '–'}</div>
                   <div className="stat-sub">{stats.biggestByWeight ? stats.biggestByWeight.fishSpecies : 'Noch kein Rekord'}</div>
                 </div>
-                <StatLure />
+                <img src="/img/stat-lure.svg" alt="" className="stat-illus" />
               </div>
 
-              <div className="stat-card">
+              <div className="stat-card stat-card--length">
                 <div className="stat-card-body">
                   <div className="stat-label">LÄNGSTER FANG</div>
                   <div className="stat-number">{stats.biggestByLength ? `${stats.biggestByLength.length} cm` : '–'}</div>
                   <div className="stat-sub">{stats.biggestByLength ? stats.biggestByLength.fishSpecies : 'Noch kein Rekord'}</div>
                 </div>
-                <StatHook />
+                <img src="/img/stat-hook.svg" alt="" className="stat-illus stat-illus--hook" />
               </div>
             </div>
 

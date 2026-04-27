@@ -1,0 +1,7 @@
+<svg viewBox="0 0 120 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="52" cy="38" rx="42" ry="26" fill="white" opacity="0.22"/>
+  <polygon points="94,38 118,18 118,58" fill="white" opacity="0.22"/>
+  <circle cx="28" cy="27" r="6" fill="white" opacity="0.15"/>
+  <circle cx="28" cy="27" r="2.5" fill="white" opacity="0.5"/>
+  <path d="M38 33 Q55 22 70 33 Q55 46 38 33Z" fill="white" opacity="0.1"/>
+</svg>
