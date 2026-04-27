@@ -193,6 +193,12 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        <div className="dashboard-legal">
+          <Link to="/impressum">{t('footer.imprint')}</Link>
+          <span>·</span>
+          <Link to="/privacy">{t('footer.privacy')}</Link>
+        </div>
+
       </div>
 
       {lightboxSrc && (

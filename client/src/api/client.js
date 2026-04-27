@@ -4,25 +4,54 @@ function getToken() {
   return localStorage.getItem('am_token');
 }
 
-async function request(path, options = {}) {
-  const token = getToken();
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers
-    }
-  });
-  if (res.status === 204) return null;
-  const data = await res.json();
-  if (!res.ok) {
-    const err = new Error(data.message || 'Fehler beim API-Aufruf');
-    err.status = res.status;
-    err.code = data.code ?? null;
-    throw err;
+// ── Loading state tracker ──────────────────────────────────────────────────
+let _pending = 0;
+let _showTimer = null;
+
+function _startLoading() {
+  _pending++;
+  if (_pending === 1 && !_showTimer) {
+    // Only show loader if request takes longer than 150 ms (avoids flash)
+    _showTimer = setTimeout(() => {
+      _showTimer = null;
+      if (_pending > 0) window.dispatchEvent(new Event('api:loading:start'));
+    }, 150);
   }
-  return data;
+}
+
+function _endLoading() {
+  _pending = Math.max(0, _pending - 1);
+  if (_pending === 0) {
+    if (_showTimer) { clearTimeout(_showTimer); _showTimer = null; }
+    window.dispatchEvent(new Event('api:loading:end'));
+  }
+}
+// ──────────────────────────────────────────────────────────────────────────
+
+async function request(path, options = {}) {
+  _startLoading();
+  try {
+    const token = getToken();
+    const res = await fetch(`${BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers
+      }
+    });
+    if (res.status === 204) return null;
+    const data = await res.json();
+    if (!res.ok) {
+      const err = new Error(data.message || 'Fehler beim API-Aufruf');
+      err.status = res.status;
+      err.code = data.code ?? null;
+      throw err;
+    }
+    return data;
+  } finally {
+    _endLoading();
+  }
 }
 
 export const api = {

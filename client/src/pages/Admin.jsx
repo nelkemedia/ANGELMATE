@@ -166,7 +166,10 @@ function ActionDropdown({ u, busy, onStatus, onRole, onReset, onDelete }) {
     if (!open) return;
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
-      setPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+      const menuWidth = 200;
+      const rawRight = window.innerWidth - r.right;
+      const clampedRight = Math.min(rawRight, window.innerWidth - menuWidth - 8);
+      setPos({ top: r.bottom + 4, right: Math.max(4, clampedRight) });
     }
     function onMouseDown(e) {
       if (menuRef.current && !menuRef.current.contains(e.target) &&

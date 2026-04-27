@@ -21,6 +21,8 @@ import VerifyEmail from './pages/VerifyEmail';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
 import UpdatePrompt from './components/UpdatePrompt';
+import { LoadingProvider } from './context/LoadingContext';
+import FishLoader from './components/FishLoader';
 
 function Layout({ children }) {
   return (
@@ -88,7 +90,10 @@ export default function App() {
       <UpdatePrompt />
       <AuthProvider>
         <TranslationProvider>
-          <AppRoutes />
+          <LoadingProvider>
+            <AppRoutes />
+            <FishLoader />
+          </LoadingProvider>
         </TranslationProvider>
       </AuthProvider>
     </BrowserRouter>
