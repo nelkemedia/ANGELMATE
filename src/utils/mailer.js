@@ -67,6 +67,52 @@ export async function testSmtpConnection({ host, port, user, password, fromName,
   });
 }
 
+async function renderTemplate(name, lang, vars) {
+  const locale = ['de', 'en', 'fr'].includes(lang) ? lang : 'de';
+  let tpl = await prisma.emailTemplate.findUnique({ where: { name_locale: { name, locale } } });
+  if (!tpl && locale !== 'de') {
+    tpl = await prisma.emailTemplate.findUnique({ where: { name_locale: { name, locale: 'de' } } });
+  }
+  if (!tpl) return null;
+  let { subject, body } = tpl;
+  for (const [k, v] of Object.entries(vars)) {
+    subject = subject.replaceAll(`{{${k}}}`, v ?? '');
+    body    = body.replaceAll(`{{${k}}}`, v ?? '');
+  }
+  return { subject, body };
+}
+
+export async function sendVerificationMail({ to, name, verifyLink, lang = 'de' }) {
+  const transport = await createTransport();
+  if (!transport) {
+    console.warn('[mailer] Kein SMTP konfiguriert – Verification-Mail nicht versendet.');
+    return false;
+  }
+  const rendered = await renderTemplate('email_verification', lang, { name, verifyLink });
+  if (rendered) {
+    await transport.sendMail({ from: await fromAddress(), to, subject: rendered.subject, html: rendered.body });
+    return true;
+  }
+  const subjects = {
+    de: '[AngelMate] Bitte bestätige deine E-Mail-Adresse',
+    en: '[AngelMate] Please verify your email address',
+    fr: '[AngelMate] Veuillez confirmer votre adresse e-mail',
+  };
+  const html = `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+  <h2 style="color:#166534;margin:0 0 16px">🎣 AngelMate</h2>
+  <p style="margin:0 0 12px">Hallo ${name},</p>
+  <p style="margin:0 0 24px">vielen Dank für deine Registrierung bei AngelMate. Bitte bestätige deine E-Mail-Adresse:</p>
+  <p style="margin:0 0 24px">
+    <a href="${verifyLink}" style="display:inline-block;background:#166534;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">E-Mail bestätigen</a>
+  </p>
+  <p style="margin:0 0 24px;color:#6b7280;font-size:14px">Der Link ist 24 Stunden gültig. Falls du kein Konto erstellt hast, kannst du diese E-Mail ignorieren.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+  <p style="margin:0;color:#9ca3af;font-size:12px">AngelMate – Dein digitaler Angelbegleiter</p>
+</div>`.trim();
+  await transport.sendMail({ from: await fromAddress(), to, subject: subjects[lang] ?? subjects.de, html });
+  return true;
+}
+
 const RESET_TEMPLATES = {
   de: {
     subject: '[AngelMate] Passwort zurücksetzen',
@@ -102,6 +148,11 @@ export async function sendPasswordResetMail({ to, name, resetLink, lang = 'de' }
   if (!transport) {
     console.warn('[mailer] Kein SMTP konfiguriert – Reset-Mail nicht versendet.');
     return false;
+  }
+  const rendered = await renderTemplate('password_reset', lang, { name, resetLink });
+  if (rendered) {
+    await transport.sendMail({ from: await fromAddress(), to, subject: rendered.subject, html: rendered.body });
+    return true;
   }
   const tpl = RESET_TEMPLATES[lang] ?? RESET_TEMPLATES.de;
   const html = `

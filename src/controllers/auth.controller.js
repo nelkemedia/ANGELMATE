@@ -5,7 +5,7 @@ import prisma from '../config/prisma.js';
 import { AppError } from '../utils/app-error.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { signToken } from '../utils/jwt.js';
-import { sendPasswordResetMail } from '../utils/mailer.js';
+import { sendPasswordResetMail, sendVerificationMail } from '../utils/mailer.js';
 
 const registerSchema = z.object({
   name: z.string().min(2).max(80),
@@ -40,14 +40,42 @@ export const register = catchAsync(async (req, res) => {
       skillLevel: data.skillLevel || 'beginner',
       language: data.language || 'de'
     },
-    select: {
-      id: true, name: true, email: true,
-      homeRegion: true, skillLevel: true, language: true, createdAt: true, avatarBase64: true, role: true
-    }
+    select: { id: true, name: true, email: true, language: true }
   });
 
-  const token = signToken({ userId: user.id });
-  res.status(201).json({ user, token });
+  await prisma.userStatus.create({ data: { userId: user.id, status: 'PENDING_VERIFICATION' } });
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+  await prisma.emailVerificationToken.create({
+    data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+  });
+
+  const base = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+  const verifyLink = `${base}/verify-email?token=${rawToken}`;
+  await sendVerificationMail({ to: user.email, name: user.name, verifyLink, lang: user.language || 'de' });
+
+  res.status(201).json({ pendingVerification: true, email: user.email });
+});
+
+export const verifyEmail = catchAsync(async (req, res) => {
+  const { token } = req.query;
+  if (!token) throw new AppError('Ungültiger Link.', 400);
+
+  const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+  const record = await prisma.emailVerificationToken.findUnique({ where: { tokenHash } });
+
+  if (!record || record.expiresAt < new Date())
+    throw new AppError('Der Bestätigungslink ist ungültig oder abgelaufen.', 400, 'ERROR_VERIFY_LINK_EXPIRED');
+
+  await prisma.userStatus.upsert({
+    where:  { userId: record.userId },
+    update: { status: 'ACTIVE' },
+    create: { userId: record.userId, status: 'ACTIVE' }
+  });
+  await prisma.emailVerificationToken.delete({ where: { tokenHash } });
+
+  res.json({ message: 'E-Mail-Adresse erfolgreich bestätigt. Du kannst dich jetzt anmelden.' });
 });
 
 export const login = catchAsync(async (req, res) => {
@@ -66,6 +94,9 @@ export const login = catchAsync(async (req, res) => {
     throw new AppError('Invalid credentials', 401, 'ERROR_INVALID_CREDENTIALS');
   }
 
+  if (user.userStatus?.status === 'PENDING_VERIFICATION') {
+    throw new AppError('Bitte bestätige zuerst deine E-Mail-Adresse.', 403, 'ERROR_EMAIL_NOT_VERIFIED');
+  }
   if (user.userStatus?.status === 'INACTIVE') {
     throw new AppError('Dein Konto wurde deaktiviert. Bitte wende dich an den Administrator.', 403, 'ERROR_ACCOUNT_INACTIVE');
   }

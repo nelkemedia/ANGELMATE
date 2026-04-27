@@ -9,8 +9,10 @@ export default function Auth() {
   const [error,      setError]      = useState('');
   const [blocked,    setBlocked]    = useState(false);
   const [loading,    setLoading]    = useState(false);
-  const [forgotDone, setForgotDone] = useState(false);
-  const [forgotEmail,setForgotEmail]= useState('');
+  const [forgotDone,    setForgotDone]    = useState(false);
+  const [forgotEmail,   setForgotEmail]   = useState('');
+  const [registerDone,  setRegisterDone]  = useState(false);
+  const [registerEmail, setRegisterEmail] = useState('');
   const { login, register } = useAuth();
   const { t } = useT();
   const navigate = useNavigate();
@@ -39,7 +41,12 @@ export default function Auth() {
         const payload = { name: form.name, email: form.email, password: form.password, language: form.language };
         if (form.homeRegion) payload.homeRegion = form.homeRegion;
         if (form.skillLevel) payload.skillLevel = form.skillLevel;
-        await register(payload);
+        const data = await register(payload);
+        if (data?.pendingVerification) {
+          setRegisterEmail(data.email ?? form.email);
+          setRegisterDone(true);
+          return;
+        }
         navigate('/');
       }
     } catch (err) {
@@ -51,7 +58,7 @@ export default function Auth() {
     }
   }
 
-  function switchMode(m) { setMode(m); setError(''); setBlocked(false); setForgotDone(false); }
+  function switchMode(m) { setMode(m); setError(''); setBlocked(false); setForgotDone(false); setRegisterDone(false); }
 
   return (
     <div className="auth-page">
@@ -78,14 +85,21 @@ export default function Auth() {
             {mode === 'login' ? t('auth.login_welcome') : t('auth.register_welcome')}
           </p>
 
-          {mode !== 'forgot' && (
+          {registerDone ? (
+            <div className="forgot-done">
+              <p style={{ fontSize: '2rem' }}>📬</p>
+              <p><strong>{t('auth.verify_pending_title')}</strong></p>
+              <p>{t('auth.verify_pending_body', { email: registerEmail })}</p>
+              <button className="auth-link-btn" onClick={() => switchMode('login')}>← {t('auth.back_to_login')}</button>
+            </div>
+          ) : mode !== 'forgot' && (
             <div className="auth-tabs">
               <button className={mode === 'login'    ? 'active' : ''} onClick={() => switchMode('login')}>{t('auth.tab_login')}</button>
               <button className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>{t('auth.tab_register')}</button>
             </div>
           )}
 
-          {mode === 'forgot' ? (
+          {!registerDone && (mode === 'forgot' ? (
             forgotDone ? (
               <div className="forgot-done">
                 <p style={{ fontSize: '2rem' }}>📬</p>
@@ -168,7 +182,7 @@ export default function Auth() {
                 {loading ? `⏳ ${t('auth.loading')}` : mode === 'login' ? `🎣 ${t('auth.login_btn')}` : `🚀 ${t('auth.register_btn')}`}
               </button>
             </form>
-          )}
+          ))}
         </div>
       </div>
     </div>

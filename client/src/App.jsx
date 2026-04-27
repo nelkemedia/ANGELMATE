@@ -17,6 +17,7 @@ import Report from './pages/Report';
 import Privacy from './pages/Privacy';
 import Admin from './pages/Admin';
 import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 import Footer from './components/Footer';
 import UpdatePrompt from './components/UpdatePrompt';
 
@@ -47,6 +48,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/auth"           element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email"   element={<VerifyEmail />} />
       <Route path="/" element={
         <ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>
       } />

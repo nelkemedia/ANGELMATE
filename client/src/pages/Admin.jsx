@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+const RichEditor = lazy(() => import('../components/RichEditor'));
 import { api } from '../api/client';
 import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
@@ -27,12 +28,16 @@ export default function Admin() {
         <button className={`community-tab ${tab === 'translations' ? 'community-tab-active' : ''}`} onClick={() => setTab('translations')}>
           🌐 {t('admin.tab_translations')}
         </button>
+        <button className={`community-tab ${tab === 'emails' ? 'community-tab-active' : ''}`} onClick={() => setTab('emails')}>
+          ✉️ {t('admin.tab_emails')}
+        </button>
       </div>
 
       {tab === 'reports'      && <ReportsTab />}
       {tab === 'users'        && <UsersTab />}
       {tab === 'smtp'         && <SmtpTab />}
       {tab === 'translations' && <TranslationsTab />}
+      {tab === 'emails'       && <EmailTemplatesTab />}
     </div>
   );
 }
@@ -675,6 +680,157 @@ function TranslationsTab() {
             })}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Email Templates Tab ───────────────────────────────────────────────────────
+
+const TEMPLATE_META = {
+  email_verification: { label: '✅ E-Mail-Bestätigung', vars: ['{{name}}', '{{verifyLink}}'] },
+  password_reset:     { label: '🔑 Passwort zurücksetzen', vars: ['{{name}}', '{{resetLink}}'] },
+};
+
+function EmailTemplatesTab() {
+  const { t } = useT();
+  const [templates, setTemplates] = useState({});
+  const [loading,   setLoading]   = useState(true);
+  const [selected,  setSelected]  = useState(null);
+  const [locale,    setLocale]    = useState('de');
+  const [form,      setForm]      = useState({ subject: '', body: '' });
+  const [saving,    setSaving]    = useState(false);
+  const [msg,       setMsg]       = useState(null);
+
+  useEffect(() => {
+    api.admin.getEmailTemplates()
+      .then((d) => setTemplates(d.templates))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  function openTemplate(name) {
+    setSelected(name);
+    setLocale('de');
+    const tpl = templates[name]?.de ?? { subject: '', body: '' };
+    setForm({ subject: tpl.subject, body: tpl.body });
+    setMsg(null);
+  }
+
+  function switchLocale(l) {
+    setLocale(l);
+    const tpl = templates[selected]?.[l] ?? { subject: '', body: '' };
+    setForm({ subject: tpl.subject, body: tpl.body });
+    setMsg(null);
+  }
+
+  async function handleSave() {
+    if (!form.subject.trim()) { setMsg({ type: 'error', text: t('admin.etpl_subject_required') }); return; }
+    setSaving(true);
+    setMsg(null);
+    try {
+      await api.admin.upsertEmailTemplate({ name: selected, locale, subject: form.subject, body: form.body });
+      setTemplates((prev) => ({
+        ...prev,
+        [selected]: { ...prev[selected], [locale]: { subject: form.subject, body: form.body } }
+      }));
+      setMsg({ type: 'success', text: `✅ ${t('admin.etpl_saved')}` });
+    } catch (e) {
+      setMsg({ type: 'error', text: `⚠️ ${e.message}` });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) return <div className="loading">{t('common.loading')}</div>;
+
+  const allNames = Array.from(new Set([...Object.keys(TEMPLATE_META), ...Object.keys(templates)]));
+
+  return (
+    <div className="admin-section etpl-layout">
+      <div className="etpl-sidebar">
+        <h3 className="etpl-sidebar-title">{t('admin.etpl_list_title')}</h3>
+        {allNames.map((name) => {
+          const meta = TEMPLATE_META[name];
+          const hasAll = ['de','en','fr'].every((l) => templates[name]?.[l]?.subject);
+          return (
+            <button
+              key={name}
+              className={`etpl-item${selected === name ? ' etpl-item-active' : ''}`}
+              onClick={() => openTemplate(name)}
+            >
+              <span className="etpl-item-label">{meta?.label ?? name}</span>
+              <span className={`etpl-badge ${hasAll ? 'etpl-badge-ok' : 'etpl-badge-warn'}`}>
+                {hasAll ? '✓ 3×' : '⚠'}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="etpl-editor">
+        {!selected ? (
+          <div className="etpl-placeholder">{t('admin.etpl_select_hint')}</div>
+        ) : (
+          <>
+            <div className="etpl-editor-header">
+              <h3 className="etpl-editor-title">{TEMPLATE_META[selected]?.label ?? selected}</h3>
+              {TEMPLATE_META[selected]?.vars && (
+                <div className="etpl-vars">
+                  <span className="etpl-vars-label">{t('admin.etpl_vars_label')}</span>
+                  {TEMPLATE_META[selected].vars.map((v) => (
+                    <code key={v} className="etpl-var">{v}</code>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="etpl-locale-tabs">
+              {[['de','🇩🇪 DE'],['en','🇬🇧 EN'],['fr','🇫🇷 FR']].map(([l, label]) => (
+                <button
+                  key={l}
+                  className={`etpl-locale-tab${locale === l ? ' etpl-locale-tab-active' : ''}`}
+                  onClick={() => switchLocale(l)}
+                >
+                  {label}
+                  {templates[selected]?.[l]?.subject && <span className="etpl-locale-dot" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="field etpl-subject-field">
+              <label>{t('admin.etpl_subject')}</label>
+              <input
+                value={form.subject}
+                onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+                placeholder={t('admin.etpl_subject_ph')}
+              />
+            </div>
+
+            <div className="etpl-body-label">{t('admin.etpl_body')}</div>
+            <div className="etpl-quill-wrap">
+              <Suspense fallback={<div className="loading">{t('common.loading')}</div>}>
+                <RichEditor
+                  key={`${selected}-${locale}`}
+                  value={form.body}
+                  onChange={(html) => setForm((f) => ({ ...f, body: html }))}
+                  placeholder={t('admin.etpl_body_ph')}
+                />
+              </Suspense>
+            </div>
+
+            {msg && (
+              <div className={msg.type === 'success' ? 'success-msg' : 'error-msg'} style={{ marginTop: '0.75rem' }}>
+                {msg.text}
+              </div>
+            )}
+            <div className="etpl-save-row">
+              <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? `⏳ ${t('common.saving')}` : `💾 ${t('common.save')}`}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

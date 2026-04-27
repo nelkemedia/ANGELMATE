@@ -24,8 +24,10 @@ export function AuthProvider({ children }) {
 
   async function register(fields) {
     const data = await api.auth.register(fields);
+    if (data?.pendingVerification) return data;
     localStorage.setItem('am_token', data.token);
     setUser(data.user);
+    return data;
   }
 
   function logout() {

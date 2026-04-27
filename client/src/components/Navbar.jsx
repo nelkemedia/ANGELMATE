@@ -21,7 +21,10 @@ export default function Navbar() {
   return (
     <>
       <nav className="navbar">
-        <div className="navbar-brand"><span>🎣</span> AngelMate</div>
+        
+        <div className="navbar-brand">
+          <NavLink to="/"><span>🎣</span> AngelMate</NavLink>
+        </div>
 
         {/* Desktop links */}
         <div className="navbar-links">

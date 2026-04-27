@@ -68,7 +68,12 @@ const KEYS = [
   { key:'auth.forgot_send_btn',       de:'Reset-Link anfordern',          en:'Request reset link',         fr:'Demander le lien de réinitialisation' },
   { key:'auth.forgot_sent_title',     de:'E-Mail gesendet!',              en:'Email sent!',                fr:'E-mail envoyé !' },
   { key:'auth.forgot_sent_body',      de:'Falls ein Konto mit dieser Adresse existiert, erhältst du in Kürze einen Reset-Link.', en:'If an account exists for this address, you will receive a reset link shortly.', fr:'Si un compte existe pour cette adresse, vous recevrez un lien de réinitialisation sous peu.' },
-  { key:'auth.back_to_login',         de:'Zurück zur Anmeldung',          en:'Back to sign in',            fr:'Retour à la connexion' },
+  { key:'auth.back_to_login',            de:'Zurück zur Anmeldung',          en:'Back to sign in',            fr:'Retour à la connexion' },
+  { key:'auth.verify_pending_title',     de:'E-Mail bestätigen',             en:'Verify your email',          fr:'Confirmez votre e-mail' },
+  { key:'auth.verify_pending_body',      de:'Wir haben eine Bestätigungsmail an {{email}} gesendet. Bitte klicke auf den Link in der E-Mail, um dein Konto zu aktivieren.', en:'We sent a verification email to {{email}}. Please click the link in the email to activate your account.', fr:'Nous avons envoyé un e-mail de confirmation à {{email}}. Cliquez sur le lien pour activer votre compte.' },
+  { key:'auth.verify_success_title',     de:'E-Mail bestätigt!',             en:'Email verified!',            fr:'E-mail confirmé !' },
+  { key:'auth.verify_error_title',       de:'Bestätigung fehlgeschlagen',    en:'Verification failed',        fr:'Échec de la confirmation' },
+  { key:'auth.verify_no_token',          de:'Kein gültiger Token gefunden.', en:'No valid token found.',      fr:'Aucun token valide trouvé.' },
   { key:'auth.account_blocked',       de:'Konto gesperrt',                en:'Account suspended',          fr:'Compte suspendu' },
   { key:'auth.reset_title',           de:'Neues Passwort festlegen',      en:'Set new password',           fr:'Définir un nouveau mot de passe' },
   { key:'auth.reset_new_pw',          de:'Neues Passwort',                en:'New password',               fr:'Nouveau mot de passe' },
@@ -267,6 +272,8 @@ const KEYS = [
   { key:'profile.user_id',             de:'Nutzer-ID',                     en:'User ID',                    fr:'ID utilisateur' },
   { key:'profile.member_since_label',  de:'Mitglied seit',                 en:'Member since',               fr:'Membre depuis' },
   { key:'profile.member_since',        de:'Mitglied seit {{date}}',        en:'Member since {{date}}',      fr:'Membre depuis {{date}}' },
+  { key:'profile.lang_title',           de:'Sprache',                       en:'Language',                   fr:'Langue' },
+  { key:'profile.lang_subtitle',        de:'Wähle deine bevorzugte Sprache. Der Wechsel wirkt sofort.', en:'Choose your preferred language. The change takes effect immediately.', fr:'Choisissez votre langue préférée. Le changement prend effet immédiatement.' },
   { key:'profile.logout_title',        de:'Abmelden',                      en:'Sign out',                   fr:'Se déconnecter' },
   { key:'profile.logout_subtitle',     de:'Du wirst auf der aktuellen Seite abgemeldet.', en:'You will be signed out on this device.', fr:'Vous serez déconnecté sur cet appareil.' },
 
@@ -277,6 +284,16 @@ const KEYS = [
   { key:'admin.tab_users',             de:'Nutzer',                        en:'Users',                      fr:'Utilisateurs' },
   { key:'admin.tab_smtp',              de:'SMTP',                          en:'SMTP',                       fr:'SMTP' },
   { key:'admin.tab_translations',      de:'Übersetzungen',                 en:'Translations',               fr:'Traductions' },
+  { key:'admin.tab_emails',            de:'Mail-Texte',                    en:'Email Templates',            fr:'Modèles d\'e-mail' },
+  { key:'admin.etpl_list_title',       de:'Vorlagen',                      en:'Templates',                  fr:'Modèles' },
+  { key:'admin.etpl_select_hint',      de:'Wähle eine Vorlage aus der Liste.', en:'Select a template from the list.', fr:'Sélectionnez un modèle dans la liste.' },
+  { key:'admin.etpl_vars_label',       de:'Variablen:',                    en:'Variables:',                 fr:'Variables :' },
+  { key:'admin.etpl_subject',          de:'Betreff',                       en:'Subject',                    fr:'Objet' },
+  { key:'admin.etpl_subject_ph',       de:'Betreff eingeben…',             en:'Enter subject…',             fr:'Saisissez l\'objet…' },
+  { key:'admin.etpl_subject_required', de:'Betreff darf nicht leer sein.', en:'Subject must not be empty.', fr:'L\'objet ne doit pas être vide.' },
+  { key:'admin.etpl_body',             de:'Inhalt (HTML)',                  en:'Body (HTML)',                fr:'Contenu (HTML)' },
+  { key:'admin.etpl_body_ph',          de:'E-Mail-Inhalt hier eingeben…',  en:'Enter email body here…',    fr:'Saisissez le contenu ici…' },
+  { key:'admin.etpl_saved',            de:'Vorlage gespeichert.',          en:'Template saved.',            fr:'Modèle enregistré.' },
   { key:'admin.reports_loading',       de:'Meldungen werden geladen…',     en:'Loading reports…',           fr:'Chargement des signalements…' },
   { key:'admin.reports_count',         de:'{{open}} offen · {{resolved}} erledigt', en:'{{open}} open · {{resolved}} resolved', fr:'{{open}} ouverts · {{resolved}} traités' },
   { key:'admin.filter_open',           de:'Offen',                         en:'Open',                       fr:'Ouverts' },
@@ -379,7 +396,9 @@ const KEYS = [
   // ── error codes ───────────────────────────────────────────────────────────
   { key:'error.error_email_taken',         de:'Diese E-Mail-Adresse ist bereits vergeben.', en:'This email address is already taken.', fr:'Cette adresse e-mail est déjà utilisée.' },
   { key:'error.error_invalid_credentials', de:'E-Mail oder Passwort ist falsch.',           en:'Email or password is incorrect.',      fr:'L\'e-mail ou le mot de passe est incorrect.' },
-  { key:'error.error_account_inactive',    de:'Dein Konto ist gesperrt. Bitte kontaktiere den Support.', en:'Your account is suspended. Please contact support.', fr:'Votre compte est suspendu. Contactez le support.' },
+  { key:'error.error_account_inactive',        de:'Dein Konto ist gesperrt. Bitte kontaktiere den Support.', en:'Your account is suspended. Please contact support.', fr:'Votre compte est suspendu. Contactez le support.' },
+  { key:'error.error_email_not_verified',      de:'Bitte bestätige zuerst deine E-Mail-Adresse.', en:'Please verify your email address first.', fr:'Veuillez d\'abord confirmer votre adresse e-mail.' },
+  { key:'error.error_verify_link_expired',     de:'Dieser Bestätigungslink ist ungültig oder abgelaufen.', en:'This verification link is invalid or has expired.', fr:'Ce lien de confirmation est invalide ou a expiré.' },
   { key:'error.error_not_found',           de:'Nicht gefunden.',                            en:'Not found.',                           fr:'Introuvable.' },
   { key:'error.error_reset_token_invalid', de:'Dieser Reset-Link ist ungültig oder abgelaufen.', en:'This reset link is invalid or has expired.', fr:'Ce lien de réinitialisation est invalide ou a expiré.' },
   { key:'error.error_wrong_password',      de:'Das aktuelle Passwort ist falsch.',          en:'The current password is incorrect.',    fr:'Le mot de passe actuel est incorrect.' },
@@ -544,7 +563,7 @@ const KEYS = [
 async function main() {
   const passwordHash = await import('bcryptjs').then(m => m.default.hash('password123', 12));
 
-  await prisma.user.upsert({
+  const demoUser = await prisma.user.upsert({
     where: { email: 'max@example.com' },
     update: {},
     create: {
@@ -554,6 +573,11 @@ async function main() {
       homeRegion: 'Berlin/Brandenburg',
       skillLevel: 'intermediate',
     },
+  });
+  await prisma.userStatus.upsert({
+    where:  { userId: demoUser.id },
+    update: {},
+    create: { userId: demoUser.id, status: 'ACTIVE' },
   });
 
   const rows = KEYS.flatMap((k) =>

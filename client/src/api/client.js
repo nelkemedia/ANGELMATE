@@ -33,7 +33,8 @@ export const api = {
     updateProfile:  (body)             => request('/auth/profile',          { method: 'PUT',  body: JSON.stringify(body) }),
     changePassword: (body)             => request('/auth/password',         { method: 'PUT',  body: JSON.stringify(body) }),
     forgotPassword: (email)            => request('/auth/forgot-password',  { method: 'POST', body: JSON.stringify({ email }) }),
-    resetPassword:  (token, newPassword) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) })
+    resetPassword:  (token, newPassword) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) }),
+    verifyEmail:    (token)            => request(`/auth/verify-email?token=${encodeURIComponent(token)}`)
   },
   catches: {
     list: () => request('/catches'),
@@ -79,7 +80,10 @@ export const api = {
     testSmtp:             (body)       => request('/admin/smtp/test',  { method: 'POST', body: JSON.stringify(body) }),
     getTranslations:      ()           => request('/admin/translations'),
     upsertTranslation:    (body)       => request('/admin/translations',       { method: 'PUT',    body: JSON.stringify(body) }),
-    deleteTranslation:    (key)        => request(`/admin/translations/${encodeURIComponent(key)}`, { method: 'DELETE' })
+    deleteTranslation:    (key)        => request(`/admin/translations/${encodeURIComponent(key)}`, { method: 'DELETE' }),
+    getEmailTemplates:    ()           => request('/admin/email-templates'),
+    upsertEmailTemplate:  (body)       => request('/admin/email-templates',    { method: 'PUT',    body: JSON.stringify(body) }),
+    deleteEmailTemplate:  (name)       => request(`/admin/email-templates/${encodeURIComponent(name)}`, { method: 'DELETE' })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>

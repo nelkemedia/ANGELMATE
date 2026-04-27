@@ -7,6 +7,7 @@ import {
   getSmtp, saveSmtp, testSmtp
 } from '../controllers/admin.controller.js';
 import { getAllTranslations, upsertTranslation, deleteTranslation } from '../controllers/translations.controller.js';
+import { getEmailTemplates, upsertEmailTemplate, deleteEmailTemplate } from '../controllers/emailTemplates.controller.js';
 
 const router = Router();
 
@@ -29,5 +30,9 @@ router.post('/smtp/test', testSmtp);
 router.get('/translations',        getAllTranslations);
 router.put('/translations',        upsertTranslation);
 router.delete('/translations/:key', deleteTranslation);
+
+router.get('/email-templates',          getEmailTemplates);
+router.put('/email-templates',          upsertEmailTemplate);
+router.delete('/email-templates/:name', deleteEmailTemplate);
 
 export default router;

@@ -28,7 +28,7 @@ function resizeToBase64(file, maxSide = 128, quality = 0.75) {
 
 export default function Profile() {
   const { user, updateUser, logout } = useAuth();
-  const { t, locale } = useT();
+  const { t, locale, changeLocale } = useT();
   const fileRef = useRef(null);
 
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarBase64 ?? null);
@@ -39,10 +39,11 @@ export default function Profile() {
     name:       user?.name       ?? '',
     homeRegion: user?.homeRegion ?? '',
     skillLevel: user?.skillLevel ?? 'beginner',
-    language:   user?.language   ?? 'de',
   });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg,    setProfileMsg]    = useState(null);
+
+  const [langSaving, setLangSaving] = useState(false);
 
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [pwSaving, setPwSaving] = useState(false);
@@ -85,6 +86,18 @@ export default function Profile() {
     }
   }
 
+  async function handleLangChange(lang) {
+    if (lang === locale || langSaving) return;
+    setLangSaving(true);
+    changeLocale(lang);
+    try {
+      const data = await api.auth.updateProfile({ language: lang });
+      updateUser(data.user);
+    } finally {
+      setLangSaving(false);
+    }
+  }
+
   async function handleProfileSave(e) {
     e.preventDefault();
     setProfileSaving(true);
@@ -94,7 +107,6 @@ export default function Profile() {
         name:       profileForm.name,
         skillLevel: profileForm.skillLevel,
         homeRegion: profileForm.homeRegion || null,
-        language:   profileForm.language,
       };
       const data = await api.auth.updateProfile(payload);
       updateUser(data.user);
@@ -210,14 +222,6 @@ export default function Profile() {
                 <option value="advanced">🏆 {t('skill.advanced')}</option>
               </select>
             </div>
-            <div className="field">
-              <label>{t('auth.language')}</label>
-              <select value={profileForm.language} onChange={setP('language')}>
-                <option value="de">🇩🇪 Deutsch</option>
-                <option value="en">🇬🇧 English</option>
-                <option value="fr">🇫🇷 Français</option>
-              </select>
-            </div>
             {profileMsg && (
               <div className={profileMsg.type === 'success' ? 'success-msg' : 'error-msg'}>{profileMsg.text}</div>
             )}
@@ -227,6 +231,34 @@ export default function Profile() {
               </button>
             </div>
           </form>
+        </div>
+
+        {/* Language */}
+        <div className="profile-card">
+          <div className="profile-card-header">
+            <span className="profile-card-icon">🌐</span>
+            <div>
+              <h3>{t('profile.lang_title')}</h3>
+              <p>{t('profile.lang_subtitle')}</p>
+            </div>
+          </div>
+          <div className={`lang-switcher${langSaving ? ' lang-btn-saving' : ''}`}>
+            {[
+              { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+              { code: 'en', flag: '🇬🇧', label: 'English' },
+              { code: 'fr', flag: '🇫🇷', label: 'Français' },
+            ].map(({ code, flag, label }) => (
+              <button
+                key={code}
+                type="button"
+                className={`lang-btn${locale === code ? ' lang-btn-active' : ''}`}
+                onClick={() => handleLangChange(code)}
+              >
+                <span className="lang-btn-flag">{flag}</span>
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Password */}

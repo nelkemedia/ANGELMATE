@@ -1904,6 +1904,14 @@ input, select, textarea { font: inherit; }
 .smtp-msg { padding: 0.6rem 1rem; border-radius: var(--radius); font-size: 0.88rem; font-weight: 500; margin-top: 0.25rem; }
 .smtp-msg-ok  { background: var(--green-light); color: var(--green); border: 1px solid var(--border); }
 .smtp-msg-err { background: var(--red-light);   color: var(--red);   border: 1.5px solid #fca5a5; }
+
+/* Language Switcher */
+.lang-switcher { display: flex; gap: 0.5rem; padding: 1.25rem 1.5rem; }
+.lang-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; padding: 0.75rem 0.5rem; border-radius: var(--radius); border: 2px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.15s; }
+.lang-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-light); }
+.lang-btn-active { border-color: var(--green) !important; background: var(--green-light) !important; color: var(--green) !important; }
+.lang-btn-flag { font-size: 1.75rem; line-height: 1; }
+.lang-btn-saving { opacity: 0.6; pointer-events: none; }
 @media (max-width: 620px) {
   .smtp-row, .smtp-row-3 { grid-template-columns: 1fr; }
 }
@@ -2128,3 +2136,45 @@ img { max-width: 100%; height: auto; }
   z-index: 501;
 }
 .lightbox-close:hover { background: rgba(255,255,255,.3); }
+
+/* Email Templates Tab */
+.etpl-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.25rem; align-items: start; }
+.etpl-sidebar { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; }
+.etpl-sidebar-title { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.75rem; }
+.etpl-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0.65rem 0.75rem; border-radius: var(--radius); border: none; background: transparent; cursor: pointer; text-align: left; gap: 0.5rem; margin-bottom: 0.25rem; transition: background 0.12s; }
+.etpl-item:hover { background: var(--green-light); }
+.etpl-item-active { background: var(--green-light) !important; }
+.etpl-item-label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+.etpl-badge { font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 99px; white-space: nowrap; }
+.etpl-badge-ok   { background: #dcfce7; color: #166534; }
+.etpl-badge-warn { background: #fef9c3; color: #854d0e; }
+.etpl-editor { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; }
+.etpl-placeholder { color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 3rem 1rem; }
+.etpl-editor-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.etpl-editor-title { font-size: 1rem; font-weight: 700; margin: 0; }
+.etpl-vars { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; }
+.etpl-vars-label { font-size: 0.78rem; color: var(--text-muted); }
+.etpl-var { font-size: 0.78rem; background: #e0f2fe; color: #0369a1; padding: 0.1rem 0.4rem; border-radius: 4px; font-family: monospace; }
+.etpl-locale-tabs { display: flex; gap: 0.35rem; margin-bottom: 1rem; }
+.etpl-locale-tab { display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.85rem; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--bg); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.12s; }
+.etpl-locale-tab:hover { border-color: var(--green); color: var(--green); }
+.etpl-locale-tab-active { border-color: var(--green) !important; background: var(--green-light) !important; color: var(--green) !important; }
+.etpl-locale-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+.etpl-subject-field { margin-bottom: 1rem; }
+.etpl-body-label { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+.etpl-quill-wrap { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+.etpl-quill-wrap .ql-toolbar { border: none; border-bottom: 1.5px solid var(--border); background: var(--surface); }
+.etpl-quill-wrap .ql-container { border: none; font-size: 0.9rem; min-height: 220px; }
+.etpl-save-row { display: flex; justify-content: flex-end; }
+@media (max-width: 740px) {
+  .etpl-layout { grid-template-columns: 1fr; }
+  .etpl-sidebar { order: 2; }
+  .etpl-editor { order: 1; }
+}
+
+/* Verify Email page */
+.verify-card { max-width: 400px; margin: 4rem auto; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 2.5rem 2rem; text-align: center; }
+.verify-icon { font-size: 3rem; margin: 0 0 0.75rem; }
+.verify-card h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.verify-body { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem; }
+.verify-btn { display: inline-block; text-decoration: none; }

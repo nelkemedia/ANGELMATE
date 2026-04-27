@@ -9,25 +9,47 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  name                String
-  email               String               @unique
-  passwordHash        String
-  homeRegion          String?
-  skillLevel          String               @default("beginner")
-  language            String               @default("de")
-  avatarBase64        String?
-  role                String               @default("USER")
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  catches             Catch[]
-  spots               Spot[]
-  comments            Comment[]
-  likes               Like[]
-  weeklyVotes         WeeklyVote[]
-  reports             Report[]
-  userStatus          UserStatus?
-  passwordResetTokens PasswordResetToken[]
+  id                      String                   @id @default(cuid())
+  name                    String
+  email                   String                   @unique
+  passwordHash            String
+  homeRegion              String?
+  skillLevel              String                   @default("beginner")
+  language                String                   @default("de")
+  avatarBase64            String?
+  role                    String                   @default("USER")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  catches                 Catch[]
+  spots                   Spot[]
+  comments                Comment[]
+  likes                   Like[]
+  weeklyVotes             WeeklyVote[]
+  reports                 Report[]
+  userStatus              UserStatus?
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  locale    String
+  subject   String
+  body      String
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, locale])
+  @@index([name])
 }
 
 model PasswordResetToken {
