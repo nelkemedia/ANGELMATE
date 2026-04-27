@@ -3,17 +3,15 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
 export default function RichEditor({ value, onChange, placeholder = '' }) {
-  const wrapperRef  = useRef(null);
-  const quillRef    = useRef(null);
-  const onChangeCb  = useRef(onChange);
+  const wrapperRef = useRef(null);
+  const quillRef   = useRef(null);
+  const onChangeCb = useRef(onChange);
   onChangeCb.current = onChange;
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
-    // Create a fresh inner div so Quill owns it completely.
-    // The wrapper stays as React's stable anchor.
     const container = document.createElement('div');
     wrapper.appendChild(container);
 
@@ -32,15 +30,21 @@ export default function RichEditor({ value, onChange, placeholder = '' }) {
       },
     });
 
-    quillRef.current.root.innerHTML = value ?? '';
+    // dangerouslyPasteHTML runs the HTML through Quill's clipboard converter,
+    // which properly unwraps unsupported block elements (like the outer <div>
+    // in email template bodies) instead of silently dropping all content.
+    if (value) {
+      quillRef.current.clipboard.dangerouslyPasteHTML(value);
+    }
 
-    quillRef.current.on('text-change', () => {
+    // Only propagate user-initiated edits; API/silent changes (e.g. our own
+    // programmatic updates above) must not cause a state-update feedback loop.
+    quillRef.current.on('text-change', (_delta, _old, source) => {
+      if (source !== 'user') return;
       onChangeCb.current(quillRef.current.root.innerHTML);
     });
 
     return () => {
-      // Clearing innerHTML removes both the toolbar and the container
-      // that Quill inserted, preventing orphaned DOM nodes on remount.
       wrapper.innerHTML = '';
       quillRef.current = null;
     };
@@ -50,7 +54,7 @@ export default function RichEditor({ value, onChange, placeholder = '' }) {
   useEffect(() => {
     if (!quillRef.current) return;
     if (value !== prevValue.current && value !== quillRef.current.root.innerHTML) {
-      quillRef.current.root.innerHTML = value ?? '';
+      quillRef.current.clipboard.dangerouslyPasteHTML(value ?? '');
     }
     prevValue.current = value;
   }, [value]);
