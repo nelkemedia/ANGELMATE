@@ -160,6 +160,11 @@ export default function Navbar() {
               <Link to="/profile" onClick={() => setShowDropdown(false)}>
                 <IconUser /> {t('nav.profile')}
               </Link>
+              {user?.role === 'ADMIN' && (
+                <Link to="/admin" onClick={() => setShowDropdown(false)}>
+                  <IconShield /> {t('nav.admin')}
+                </Link>
+              )}
               <hr />
               <button onClick={handleLogout}>
                 <IconLogout /> {t('nav.logout')}
