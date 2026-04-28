@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -6,6 +6,8 @@ import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import Avatar from '../components/Avatar';
 import AdSlot from '../components/AdSlot';
+import AdBanner from '../components/AdBanner';
+import AdCard from '../components/AdCard';
 import PhotoLightbox from '../components/PhotoLightbox';
 
 const SKILL_EMOJI = { beginner: '🐣', intermediate: '🎯', advanced: '🏆' };
@@ -53,7 +55,7 @@ function FeedTab() {
   const [pages, setPages]     = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
-  const AD_AFTER_ITEM = 3;
+  const [ads, setAds]         = useState([]);
 
   async function load(p = 1) {
     setLoading(true);
@@ -71,6 +73,18 @@ function FeedTab() {
 
   useEffect(() => { load(1); }, []);
 
+  useEffect(() => {
+    api.ads.allForPosition('FEED')
+      .then((data) => {
+        const allAds = data.ads || [];
+        setAds(allAds);
+        allAds.forEach((ad) => {
+          api.ads.trackImpression(ad.id).catch(() => {});
+        });
+      })
+      .catch(() => setAds([]));
+  }, []);
+
   function handleLike(id, likedByMe, likeCount) {
     setItems((prev) => prev.map((c) =>
       c.id === id ? { ...c, likedByMe: !likedByMe, likeCount: likedByMe ? likeCount - 1 : likeCount + 1 } : c
@@ -79,6 +93,34 @@ function FeedTab() {
       setItems((prev) => prev.map((c) => c.id === id ? { ...c, likedByMe, likeCount } : c));
     });
   }
+
+  // Merge items and ads
+  const itemsWithAds = useMemo(() => {
+    if (items.length === 0) {
+      return ads.map((ad, idx) => ({ type: 'ad', ad, key: `ad-empty-${idx}` }));
+    }
+
+    const result = [];
+    let adIdx = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      result.push({ type: 'feed', item: items[i], key: items[i].id });
+
+      // After every 3 items, add an ad if available
+      if ((i + 1) % 3 === 0 && adIdx < ads.length) {
+        result.push({ type: 'ad', ad: ads[adIdx], key: `ad-${adIdx}` });
+        adIdx++;
+      }
+    }
+
+    // Add remaining ads at the end
+    while (adIdx < ads.length) {
+      result.push({ type: 'ad', ad: ads[adIdx], key: `ad-${adIdx}` });
+      adIdx++;
+    }
+
+    return result;
+  }, [items, ads]);
 
   return (
     <>
@@ -100,24 +142,42 @@ function FeedTab() {
         </div>
       )}
 
-      <div className="feed">
-        {items.map((c, idx) => (
-          <>
-            <FeedCard
-              key={c.id}
-              catch_={c}
-              currentUserId={user?.id}
-              currentUser={user}
-              onLike={handleLike}
-              onCommentCountChange={(id, delta) =>
-                setItems((prev) => prev.map((x) => x.id === id ? { ...x, commentCount: x.commentCount + delta } : x))
-              }
-            />
-            {idx === Math.min(AD_AFTER_ITEM - 1, items.length - 1) && <AdSlot key="feed-ad" position="FEED" />}
-          </>
-        ))}
-        {items.length === 0 && <AdSlot key="feed-ad-empty" position="FEED" />}
-      </div>
+      {items.length > 0 && (
+        <div className="feed">
+          {itemsWithAds.map((item) =>
+            item.type === 'feed' ? (
+              <FeedCard
+                key={item.key}
+                catch_={item.item}
+                currentUserId={user?.id}
+                currentUser={user}
+                onLike={handleLike}
+                onCommentCountChange={(id, delta) =>
+                  setItems((prev) => prev.map((x) => x.id === id ? { ...x, commentCount: x.commentCount + delta } : x))
+                }
+              />
+            ) : (
+              <div key={item.key} className="ad-item">
+                {item.ad.format === 'BANNER'
+                  ? <AdBanner ad={item.ad} />
+                  : <AdCard ad={item.ad} />}
+              </div>
+            )
+          )}
+        </div>
+      )}
+
+      {items.length === 0 && ads.length > 0 && (
+        <div className="feed">
+          {itemsWithAds.map((item) => (
+            <div key={item.key} className="ad-item">
+              {item.ad.format === 'BANNER'
+                ? <AdBanner ad={item.ad} />
+                : <AdCard ad={item.ad} />}
+            </div>
+          ))}
+        </div>
+      )}
 
       {loading && <div className="loading">🌍 {t('community.feed_loading')}</div>}
 
