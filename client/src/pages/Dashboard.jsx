@@ -73,9 +73,9 @@ export default function Dashboard() {
         </div>
         <HeroWave />
       </div>
-
+    
       <div className="app-main" style={{ paddingTop: '1.5rem' }}>
-
+        <AdSlot position="DASHBOARD_TOP" />
         <div className="fun-fact-card">
           <div className="fun-fact-text">
             <strong>{t('dashboard.fun_fact_label')}</strong>
@@ -85,7 +85,7 @@ export default function Dashboard() {
         </div>
 
         {error && <div className="error-msg">{error}</div>}
-
+        
         {stats && (
           <>
             <div className="stats-grid">
@@ -166,7 +166,7 @@ export default function Dashboard() {
           </>
         )}
 
-        <AdSlot position="DASHBOARD" />
+        <AdSlot position="DASHBOARD_BOTTOM" />
 
         <div className="quick-links">
           <Link to="/catches" className="quick-link ql-catches">

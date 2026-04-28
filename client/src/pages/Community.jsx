@@ -113,9 +113,10 @@ function FeedTab() {
                 setItems((prev) => prev.map((x) => x.id === id ? { ...x, commentCount: x.commentCount + delta } : x))
               }
             />
-            {idx === AD_AFTER_ITEM - 1 && <AdSlot key="feed-ad" position="FEED" />}
+            {idx === Math.min(AD_AFTER_ITEM - 1, items.length - 1) && <AdSlot key="feed-ad" position="FEED" />}
           </>
         ))}
+        {items.length === 0 && <AdSlot key="feed-ad-empty" position="FEED" />}
       </div>
 
       {loading && <div className="loading">🌍 {t('community.feed_loading')}</div>}

@@ -204,3 +204,27 @@ export const resetPassword = catchAsync(async (req, res) => {
 
   res.json({ message: 'Passwort erfolgreich zurückgesetzt. Du kannst dich jetzt anmelden.' });
 });
+
+const deleteAccountSchema = z.object({
+  password: z.string().min(1)
+});
+
+export const deleteAccount = catchAsync(async (req, res) => {
+  const { password } = deleteAccountSchema.parse(req.body);
+
+  const userWithHash = await prisma.user.findUnique({ where: { id: req.user.id } });
+  const valid = await bcrypt.compare(password, userWithHash.passwordHash);
+  if (!valid) throw new AppError('Passwort ist falsch.', 401);
+
+  await prisma.$transaction([
+    prisma.like.deleteMany({ where: { userId: req.user.id } }),
+    prisma.comment.deleteMany({ where: { userId: req.user.id } }),
+    prisma.weeklyVote.deleteMany({ where: { userId: req.user.id } }),
+    prisma.catch.deleteMany({ where: { userId: req.user.id } }),
+    prisma.spot.deleteMany({ where: { userId: req.user.id } }),
+    prisma.report.updateMany({ where: { userId: req.user.id }, data: { userId: null } }),
+    prisma.user.delete({ where: { id: req.user.id } })
+  ]);
+
+  res.status(204).send();
+});

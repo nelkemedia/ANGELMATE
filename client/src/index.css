@@ -887,7 +887,7 @@ input, select, textarea { font: inherit; }
 .profile-card-header h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.1rem; }
 .profile-card-header p  { font-size: 0.82rem; color: var(--text-muted); }
 .profile-card form { padding: 1.25rem 1.5rem 0.5rem; }
-.profile-card-actions { display: flex; justify-content: flex-end; padding: 0 1.5rem 1.25rem; }
+.profile-card-actions { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 0 1.5rem 1.25rem; }
 
 .profile-card-info .profile-card-header { border-bottom: none; }
 .profile-info-rows { padding: 0 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 0; }
@@ -912,6 +912,16 @@ input, select, textarea { font: inherit; }
   transition: all .2s; display: block; margin: 1.25rem 1.5rem;
 }
 .btn-danger:hover { background: #fecaca; }
+.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.delete-account-warning {
+  background: #fff5f5; border: 1.5px solid #fca5a5;
+  border-radius: var(--radius); padding: 1rem;
+  margin-bottom: 1.25rem; color: var(--red);
+}
+.delete-account-warning p { font-size: 0.88rem; margin-bottom: 0.5rem; }
+.delete-account-warning p:last-child { margin-bottom: 0; }
+.delete-account-warning strong { font-weight: 700; }
 
 .success-msg {
   background: var(--green-light); color: var(--green);

@@ -12,7 +12,7 @@ const advertiserSchema = z.object({
 const adSchema = z.object({
   advertiserId: z.number().int().positive(),
   format:       z.enum(['BANNER', 'CARD']),
-  position:     z.enum(['FEED', 'DASHBOARD']),
+  positions:    z.array(z.enum(['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'])).min(1),
   imageBase64:  z.string().min(1),
   linkUrl:      z.string().url(),
   title:        z.string().max(100).optional().nullable(),
@@ -27,14 +27,14 @@ const adSchema = z.object({
 
 export const getCurrentAd = catchAsync(async (req, res) => {
   const { position } = req.query;
-  if (!position || !['FEED', 'DASHBOARD'].includes(position)) {
+  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].includes(position)) {
     throw new AppError('Invalid position', 400, 'INVALID_POSITION');
   }
 
   const now = new Date();
   const ad = await prisma.ad.findFirst({
     where: {
-      position,
+      positions: { has: position },
       isActive: true,
       OR: [{ startsAt: null }, { startsAt: { lte: now } }],
       AND: { OR: [{ endsAt: null }, { endsAt: { gte: now } }] }
@@ -99,13 +99,13 @@ export const deleteAdvertiser = catchAsync(async (req, res) => {
 export const getAds = catchAsync(async (req, res) => {
   const { position, advertiserId, isActive } = req.query;
   const where = {};
-  if (position)     where.position     = position;
+  if (position)     where.positions = { has: position };
   if (advertiserId) where.advertiserId = parseInt(advertiserId);
   if (isActive !== undefined) where.isActive = isActive === 'true';
 
   const ads = await prisma.ad.findMany({
     where,
-    orderBy: [{ position: 'asc' }, { priority: 'desc' }, { createdAt: 'desc' }],
+    orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     include: { advertiser: { select: { id: true, name: true } } }
   });
   res.json({ ads });

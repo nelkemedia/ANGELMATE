@@ -192,7 +192,8 @@ enum AdFormat {
 
 enum AdPosition {
   FEED
-  DASHBOARD
+  DASHBOARD_TOP
+  DASHBOARD_BOTTOM
 }
 
 model Advertiser {
@@ -209,7 +210,7 @@ model Ad {
   advertiserId    Int
   advertiser      Advertiser @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
   format          AdFormat
-  position        AdPosition
+  positions       AdPosition[]
   imageBase64     String     @db.Text
   linkUrl         String
   title           String?
@@ -222,5 +223,5 @@ model Ad {
   impressionCount Int        @default(0)
   createdAt       DateTime   @default(now())
 
-  @@index([position, isActive])
+  @@index([isActive])
 }

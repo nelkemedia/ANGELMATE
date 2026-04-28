@@ -61,6 +61,7 @@ export const api = {
     me:             ()                 => request('/auth/me'),
     updateProfile:  (body)             => request('/auth/profile',          { method: 'PUT',  body: JSON.stringify(body) }),
     changePassword: (body)             => request('/auth/password',         { method: 'PUT',  body: JSON.stringify(body) }),
+    deleteAccount:  (password)         => request('/auth/account',          { method: 'DELETE', body: JSON.stringify({ password }) }),
     forgotPassword: (email)            => request('/auth/forgot-password',  { method: 'POST', body: JSON.stringify({ email }) }),
     resetPassword:  (token, newPassword) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) }),
     verifyEmail:    (token)            => request(`/auth/verify-email?token=${encodeURIComponent(token)}`)

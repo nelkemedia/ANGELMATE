@@ -712,7 +712,7 @@ function TranslationsTab() {
 // ── Ads Tab ───────────────────────────────────────────────────────────────────
 
 const EMPTY_ADVERTISER = { name: '', contactEmail: '', logoBase64: '' };
-const EMPTY_AD = { advertiserId: '', format: 'BANNER', position: 'DASHBOARD', imageBase64: '', linkUrl: '', title: '', description: '', isActive: false, startsAt: '', endsAt: '', priority: 0 };
+const EMPTY_AD = { advertiserId: '', format: 'BANNER', positions: ['FEED'], imageBase64: '', linkUrl: '', title: '', description: '', isActive: false, startsAt: '', endsAt: '', priority: 0 };
 
 function AdsTab() {
   const [advertisers, setAdvertisers] = useState([]);
@@ -788,7 +788,7 @@ function AdsTab() {
     setAdForm({
       advertiserId: ad.advertiserId,
       format:       ad.format,
-      position:     ad.position,
+      positions:    ad.positions ?? ['FEED'],
       imageBase64:  ad.imageBase64,
       linkUrl:      ad.linkUrl,
       title:        ad.title ?? '',
@@ -809,7 +809,7 @@ function AdsTab() {
     const payload = {
       advertiserId: parseInt(adForm.advertiserId),
       format:       adForm.format,
-      position:     adForm.position,
+      positions:    adForm.positions,
       imageBase64:  adForm.imageBase64,
       linkUrl:      adForm.linkUrl,
       title:        adForm.title   || null,
@@ -861,7 +861,7 @@ function AdsTab() {
 
   if (loading) return <div className="loading">Laden…</div>;
 
-  const positionLabel = { FEED: '📰 Feed', DASHBOARD: '🏠 Dashboard' };
+  const positionLabel = { FEED: '📰 Feed', DASHBOARD_TOP: '🏠 Dashboard (oben)', DASHBOARD_BOTTOM: '🏠 Dashboard (unten)' };
   const formatLabel   = { BANNER: 'Banner', CARD: 'Karte' };
 
   return (
@@ -968,11 +968,24 @@ function AdsTab() {
                 </select>
               </div>
               <div className="field">
-                <label>Position</label>
-                <select value={adForm.position} onChange={(e) => setAdForm((f) => ({ ...f, position: e.target.value }))}>
-                  <option value="DASHBOARD">🏠 Dashboard</option>
-                  <option value="FEED">📰 Community Feed</option>
-                </select>
+                <label>Positionen (mind. eine)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].map((pos) => (
+                    <label key={pos} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={adForm.positions.includes(pos)}
+                        onChange={(e) => setAdForm((f) => ({
+                          ...f,
+                          positions: e.target.checked
+                            ? [...f.positions, pos]
+                            : f.positions.filter((p) => p !== pos)
+                        }))}
+                      />
+                      <span>{positionLabel[pos]}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1054,7 +1067,7 @@ function AdsTab() {
                   <tr key={ad.id} className={!ad.isActive ? 'admin-row-inactive' : ''}>
                     <td><strong>{ad.advertiser?.name}</strong></td>
                     <td>{formatLabel[ad.format]}</td>
-                    <td>{positionLabel[ad.position]}</td>
+                    <td>{ad.positions?.map(p => positionLabel[p]).join(', ')}</td>
                     <td>
                       <button
                         className={`admin-badge ${ad.isActive ? 'admin-badge-ok' : 'admin-badge-warn'}`}

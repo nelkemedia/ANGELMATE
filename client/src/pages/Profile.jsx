@@ -49,6 +49,11 @@ export default function Profile() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg,    setPwMsg]    = useState(null);
 
+  const [deleteStep, setDeleteStep] = useState(0);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteMsg, setDeleteMsg] = useState(null);
+
   function setP(field) { return (e) => setProfileForm((f) => ({ ...f, [field]: e.target.value })); }
   function setW(field) { return (e) => setPwForm((f) => ({ ...f, [field]: e.target.value })); }
 
@@ -134,6 +139,35 @@ export default function Profile() {
       setPwMsg({ type: 'error', text: `⚠️ ${e.message}` });
     } finally {
       setPwSaving(false);
+    }
+  }
+
+  function handleDeleteAccountStart() {
+    setDeleteStep(1);
+    setDeletePassword('');
+    setDeleteMsg(null);
+  }
+
+  function handleDeleteAccountCancel() {
+    setDeleteStep(0);
+    setDeletePassword('');
+    setDeleteMsg(null);
+  }
+
+  async function handleDeleteAccountConfirm(e) {
+    e.preventDefault();
+    if (!deletePassword) {
+      setDeleteMsg({ type: 'error', text: `⚠️ ${t('profile.delete_account_password_required')}` });
+      return;
+    }
+    setDeleteLoading(true);
+    setDeleteMsg(null);
+    try {
+      await api.auth.deleteAccount(deletePassword);
+      logout();
+    } catch (e) {
+      setDeleteMsg({ type: 'error', text: `⚠️ ${e.message}` });
+      setDeleteLoading(false);
     }
   }
 
@@ -313,13 +347,58 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Danger zone */}
+        {/* Danger zone - Logout */}
         <div className="profile-card profile-card-danger">
           <div className="profile-card-header">
             <span className="profile-card-icon">🚪</span>
             <div><h3>{t('profile.logout_title')}</h3><p>{t('profile.logout_subtitle')}</p></div>
           </div>
           <button className="btn-danger" onClick={logout}>🚪 {t('nav.logout')}</button>
+        </div>
+
+        {/* Danger zone - Delete Account */}
+        <div className="profile-card profile-card-danger">
+          <div className="profile-card-header">
+            <span className="profile-card-icon">⚠️</span>
+            <div><h3>{t('profile.delete_account_title')}</h3><p>{t('profile.delete_account_subtitle')}</p></div>
+          </div>
+
+          {deleteStep === 0 ? (
+            <button className="btn-danger" onClick={handleDeleteAccountStart}>
+              🗑 {t('profile.delete_account_btn')}
+            </button>
+          ) : (
+            <form onSubmit={handleDeleteAccountConfirm}>
+              <div className="delete-account-warning">
+                <p><strong>⚠️ {t('profile.delete_account_warning')}</strong></p>
+                <p>{t('profile.delete_account_permanent')}</p>
+              </div>
+              <div className="field">
+                <label>{t('profile.delete_account_password_label')}</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  placeholder={t('profile.delete_account_password_placeholder')}
+                  required
+                  disabled={deleteLoading}
+                />
+              </div>
+              {deleteMsg && (
+                <div className={deleteMsg.type === 'success' ? 'success-msg' : 'error-msg'}>
+                  {deleteMsg.text}
+                </div>
+              )}
+              <div className="profile-card-actions">
+                <button type="submit" className="btn-danger" disabled={deleteLoading}>
+                  {deleteLoading ? `⏳ ${t('common.saving')}` : `🗑 ${t('profile.delete_account_confirm')}`}
+                </button>
+                <button type="button" className="btn-ghost" onClick={handleDeleteAccountCancel} disabled={deleteLoading}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
       </div>

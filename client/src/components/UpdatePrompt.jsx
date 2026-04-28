@@ -26,7 +26,7 @@ export default function UpdatePrompt() {
     <div style={{
       position: 'fixed', bottom: '5rem', left: '50%',
       transform: 'translateX(-50%)', zIndex: 9999,
-      background: '#166534', color: '#fff',
+      background: '#0a6b6b', color: '#fff',
       padding: '0.75rem 1.25rem', borderRadius: '0.75rem',
       display: 'flex', gap: '0.75rem', alignItems: 'center',
       boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
