@@ -22,20 +22,42 @@ async function initDatabase() {
   } catch (error) {
     // If table doesn't exist (P3005), we need to baseline
     if (error.message.includes('does not exist') || error.code === 'P3005') {
-      console.log('⚠️  Database not initialized with Prisma. Baselining...');
+      console.log('⚠️  Database not initialized with Prisma. Creating baseline...');
 
       try {
-        // Mark the existing schema as baseline by resolving old migrations
-        console.log('📋 Marking previous migrations as resolved...');
-        execSync('npx prisma migrate resolve --rolled-back 20260424052210_add_avatar', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260424043323_add_comments_likes', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260424045110_add_weekly_vote', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260424060525_add_report', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260424063919_add_admin_role', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260427000001_add_email_templates', { stdio: 'ignore' });
-        execSync('npx prisma migrate resolve --rolled-back 20260428094102_add_ads_and_advertisers', { stdio: 'ignore' });
+        // Create and populate the _prisma_migrations table manually
+        console.log('📋 Initializing Prisma migrations table...');
 
-        console.log('🔄 Now running all migrations...');
+        const migrationsList = [
+          '20260423140545_init',
+          '20260424043323_add_comments_likes',
+          '20260424045110_add_weekly_vote',
+          '20260424052210_add_avatar',
+          '20260424060525_add_report',
+          '20260424063919_add_admin_role',
+          '20260427000001_add_email_templates',
+          '20260428094102_add_ads_and_advertisers',
+        ];
+
+        for (const migration of migrationsList) {
+          await prisma.$executeRawUnsafe(`
+            INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time)
+            VALUES (
+              '${Date.now()}-${Math.random()}',
+              'checksum-${migration}',
+              NOW(),
+              '${migration}',
+              '',
+              NULL,
+              NOW(),
+              0
+            )
+            ON CONFLICT (id) DO NOTHING
+          `);
+        }
+
+        console.log('✅ Baseline created');
+        console.log('🔄 Now running pending migrations...');
         execSync('npx prisma migrate deploy', { stdio: 'inherit' });
       } catch (retryError) {
         console.error('❌ Migration recovery failed:', retryError.message);
