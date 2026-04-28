@@ -38,7 +38,8 @@ async function initDatabase() {
             logs TEXT,
             rolled_back_at TIMESTAMP,
             started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            execution_time BIGINT NOT NULL
+            execution_time BIGINT NOT NULL,
+            applied_steps_count INTEGER NOT NULL DEFAULT 0
           )
         `);
 
@@ -57,7 +58,7 @@ async function initDatabase() {
           const migrationId = `${migration}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
           try {
             await prisma.$executeRaw`
-              INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time)
+              INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time, applied_steps_count)
               VALUES (
                 ${migrationId},
                 ${'checksum-' + migration},
@@ -66,7 +67,8 @@ async function initDatabase() {
                 '',
                 NULL,
                 NOW(),
-                0
+                0,
+                1
               )
             `;
           } catch (e) {
