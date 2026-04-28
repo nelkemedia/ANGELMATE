@@ -1109,6 +1109,7 @@ const TEMPLATE_META = {
   email_verification: { label: '✅ E-Mail-Bestätigung', vars: ['{{name}}', '{{verifyLink}}'] },
   password_reset:     { label: '🔑 Passwort zurücksetzen', vars: ['{{name}}', '{{resetLink}}'] },
   new_comment_in_feed: { label: 'ℹ️ Neuer Kommentar', vars: ['{{catch_owner_name}}', '{{comment_from}}', '{{comment_body}}'] },
+  new_user_registered: { label: '🆕 Neuer Benutzer', vars: ['{{user_name}}', '{{user_email}}', '{{user_home_region}}', '{{user_skill_level}}', '{{user_language}}', '{{registration_time}}'] },
 };
 
 function EmailTemplatesTab() {
