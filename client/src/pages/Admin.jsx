@@ -522,6 +522,7 @@ function TranslationsTab() {
   const [data,      setData]      = useState({});
   const [loading,   setLoading]   = useState(true);
   const [nsFilter,  setNsFilter]  = useState('');
+  const [search,    setSearch]    = useState('');
   const [editRow,   setEditRow]   = useState(null);
   const [editVals,  setEditVals]  = useState({ de: '', en: '', fr: '' });
   const [savingRow, setSavingRow] = useState(null);
@@ -543,8 +544,14 @@ function TranslationsTab() {
 
   const namespaces = [...new Set(Object.keys(data).map((k) => k.split('.')[0]))].sort();
 
+  const q = search.trim().toLowerCase();
   const rows = Object.entries(data)
     .filter(([key]) => !nsFilter || key.startsWith(nsFilter + '.'))
+    .filter(([key, vals]) => {
+      if (!q) return true;
+      return key.toLowerCase().includes(q) ||
+             Object.values(vals).some(v => (v ?? '').toLowerCase().includes(q));
+    })
     .sort(([a], [b]) => a.localeCompare(b));
 
   function startEdit(key, vals) {
@@ -621,12 +628,22 @@ function TranslationsTab() {
         {addError && <div className="error-msg" style={{ marginTop: '0.5rem' }}>⚠️ {addError}</div>}
       </form>
 
-      {/* Namespace filter */}
+      {/* Namespace filter & search */}
       <div className="trans-filter-row">
         <select className="trans-ns-select" value={nsFilter} onChange={(e) => setNsFilter(e.target.value)}>
           <option value="">{t('admin.trans_all_ns')}</option>
           {namespaces.map((ns) => <option key={ns} value={ns}>{ns}.*</option>)}
         </select>
+        <div className="admin-search-wrap">
+          <span className="admin-search-icon">🔍</span>
+          <input
+            className="admin-search"
+            type="search"
+            placeholder={t('admin.search_placeholder')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         <span className="admin-count">{rows.length} {t('admin.trans_keys_count')}</span>
       </div>
 
