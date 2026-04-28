@@ -92,7 +92,7 @@ export default function Dashboard() {
               <div className="stat-card primary">
                 <div className="stat-card-body">
                   <div className="stat-number">{stats.totalCatches}</div>
-                  <div className="stat-label">GESAMT</div>
+                  <div className="stat-label">{t('dashboard.total_title','GESAMT')}</div>
                   <div className="stat-sub">{t('dashboard.stat_total')}</div>
                 </div>
                 <img src="/img/stat-fish-white.svg" alt="" className="stat-illus" />
