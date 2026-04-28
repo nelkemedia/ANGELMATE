@@ -19,6 +19,7 @@ RUN npm install --omit=dev
 # Copy backend source
 COPY src/ ./src/
 COPY prisma/ ./prisma/
+COPY scripts/ ./scripts/
 
 # Copy built frontend
 COPY --from=client-builder /build/client/dist ./client/dist
@@ -29,4 +30,4 @@ RUN npx prisma generate
 EXPOSE 3000
 
 # Run DB migrations, then start the server
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/server.js"]
+CMD ["node", "scripts/init.js"]
