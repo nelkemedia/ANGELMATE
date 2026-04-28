@@ -40,20 +40,21 @@ async function initDatabase() {
         ];
 
         for (const migration of migrationsList) {
-          await prisma.$executeRawUnsafe(`
+          const migrationId = `${migration}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+          await prisma.$executeRaw`
             INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time)
             VALUES (
-              '${Date.now()}-${Math.random()}',
-              'checksum-${migration}',
+              ${migrationId},
+              ${'checksum-' + migration},
               NOW(),
-              '${migration}',
+              ${migration},
               '',
               NULL,
               NOW(),
               0
             )
             ON CONFLICT (id) DO NOTHING
-          `);
+          `;
         }
 
         console.log('✅ Baseline created');
