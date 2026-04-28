@@ -28,6 +28,20 @@ async function initDatabase() {
         // Create and populate the _prisma_migrations table manually
         console.log('📋 Initializing Prisma migrations table...');
 
+        // First, create the migrations table if it doesn't exist
+        await prisma.$executeRawUnsafe(`
+          CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
+            id VARCHAR(36) PRIMARY KEY,
+            checksum VARCHAR(64) NOT NULL,
+            finished_at TIMESTAMP,
+            migration_name VARCHAR(255) NOT NULL UNIQUE,
+            logs TEXT,
+            rolled_back_at TIMESTAMP,
+            started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            execution_time BIGINT NOT NULL
+          )
+        `);
+
         const migrationsList = [
           '20260423140545_init',
           '20260424043323_add_comments_likes',
@@ -41,20 +55,24 @@ async function initDatabase() {
 
         for (const migration of migrationsList) {
           const migrationId = `${migration}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-          await prisma.$executeRaw`
-            INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time)
-            VALUES (
-              ${migrationId},
-              ${'checksum-' + migration},
-              NOW(),
-              ${migration},
-              '',
-              NULL,
-              NOW(),
-              0
-            )
-            ON CONFLICT (id) DO NOTHING
-          `;
+          try {
+            await prisma.$executeRaw`
+              INSERT INTO "_prisma_migrations" (id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, execution_time)
+              VALUES (
+                ${migrationId},
+                ${'checksum-' + migration},
+                NOW(),
+                ${migration},
+                '',
+                NULL,
+                NOW(),
+                0
+              )
+            `;
+          } catch (e) {
+            // Ignore duplicate key errors
+            if (!e.message.includes('duplicate')) throw e;
+          }
         }
 
         console.log('✅ Baseline created');
