@@ -197,3 +197,37 @@ export async function sendCommentNotificationMail({ to, catchOwnerName, commentF
   console.warn('[mailer] Template "new_comment_in_feed" nicht gefunden.');
   return false;
 }
+
+export async function sendNewUserNotificationMail({ userName, userEmail, userHomeRegion, userSkillLevel, userLanguage, registrationTime }) {
+  const transport = await createTransport();
+  if (!transport) {
+    console.warn('[mailer] Kein SMTP konfiguriert – New User Notification nicht versendet.');
+    return false;
+  }
+
+  const admins = await prisma.user.findMany({ where: { role: 'ADMIN' }, select: { email: true, language: true } });
+  if (admins.length === 0) {
+    console.warn('[mailer] Keine Admin-Benutzer gefunden.');
+    return false;
+  }
+
+  for (const admin of admins) {
+    const lang = ['de', 'en', 'fr'].includes(admin.language) ? admin.language : 'de';
+    const rendered = await renderTemplate('new_user_registered', lang, {
+      user_name: userName,
+      user_email: userEmail,
+      user_home_region: userHomeRegion || '—',
+      user_skill_level: userSkillLevel,
+      user_language: userLanguage,
+      registration_time: registrationTime
+    });
+
+    if (rendered) {
+      await transport.sendMail({ from: await fromAddress(), to: admin.email, subject: rendered.subject, html: rendered.body });
+    } else {
+      console.warn(`[mailer] Template "new_user_registered" nicht gefunden für Sprache ${lang}.`);
+    }
+  }
+
+  return true;
+}

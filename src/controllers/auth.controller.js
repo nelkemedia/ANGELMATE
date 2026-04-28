@@ -5,7 +5,7 @@ import prisma from '../config/prisma.js';
 import { AppError } from '../utils/app-error.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { signToken } from '../utils/jwt.js';
-import { sendPasswordResetMail, sendVerificationMail } from '../utils/mailer.js';
+import { sendPasswordResetMail, sendVerificationMail, sendNewUserNotificationMail } from '../utils/mailer.js';
 
 const registerSchema = z.object({
   name: z.string().min(2).max(80),
@@ -54,6 +54,16 @@ export const register = catchAsync(async (req, res) => {
   const base = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const verifyLink = `${base}/verify-email?token=${rawToken}`;
   await sendVerificationMail({ to: user.email, name: user.name, verifyLink, lang: user.language || 'de' });
+
+  const registrationTime = new Date().toLocaleString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  await sendNewUserNotificationMail({
+    userName: user.name,
+    userEmail: user.email,
+    userHomeRegion: data.homeRegion,
+    userSkillLevel: data.skillLevel || 'beginner',
+    userLanguage: data.language || 'de',
+    registrationTime
+  });
 
   res.status(201).json({ pendingVerification: true, email: user.email });
 });

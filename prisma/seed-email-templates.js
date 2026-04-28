@@ -114,6 +114,57 @@ const TEMPLATES = [
   <p style="margin:0;color:#9ca3af;font-size:12px">AngelMate – Votre compagnon de pêche numérique</p>
 </div>`}
   },
+  {
+    name: 'new_user_registered',
+    de: {
+      subject: '[AngelMate Admin] Neuer Benutzer registriert',
+      body: WRAPPER(`
+  <h2 style="color:#166534;margin:0 0 20px;font-size:22px">🎣 AngelMate – Neue Registrierung</h2>
+  <p style="margin:0 0 12px;font-size:16px;color:#111827">Hallo Admin,</p>
+  <p style="margin:0 0 24px;font-size:15px;color:#374151">ein neuer Benutzer hat sich bei AngelMate registriert:</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0 0 8px;color:#374151"><strong>Name:</strong> {{user_name}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>E-Mail:</strong> {{user_email}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Heimatregion:</strong> {{user_home_region}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Erfahrungsstufe:</strong> {{user_skill_level}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Sprache:</strong> {{user_language}}</p>
+    <p style="margin:0;color:#374151"><strong>Registriert am:</strong> {{registration_time}}</p>
+  </div>
+  <p style="margin:0;font-size:13px;color:#6b7280">Diese Nachricht wurde automatisch generiert.</p>`)
+    },
+    en: {
+      subject: '[AngelMate Admin] New user registered',
+      body: WRAPPER(`
+  <h2 style="color:#166534;margin:0 0 20px;font-size:22px">🎣 AngelMate – New Registration</h2>
+  <p style="margin:0 0 12px;font-size:16px;color:#111827">Hello Admin,</p>
+  <p style="margin:0 0 24px;font-size:15px;color:#374151">a new user has registered on AngelMate:</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0 0 8px;color:#374151"><strong>Name:</strong> {{user_name}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Email:</strong> {{user_email}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Home Region:</strong> {{user_home_region}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Skill Level:</strong> {{user_skill_level}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Language:</strong> {{user_language}}</p>
+    <p style="margin:0;color:#374151"><strong>Registered at:</strong> {{registration_time}}</p>
+  </div>
+  <p style="margin:0;font-size:13px;color:#6b7280">This message was generated automatically.</p>`)
+    },
+    fr: {
+      subject: '[AngelMate Admin] Nouvel utilisateur enregistré',
+      body: WRAPPER(`
+  <h2 style="color:#166534;margin:0 0 20px;font-size:22px">🎣 AngelMate – Nouvelle inscription</h2>
+  <p style="margin:0 0 12px;font-size:16px;color:#111827">Bonjour Admin,</p>
+  <p style="margin:0 0 24px;font-size:15px;color:#374151">un nouvel utilisateur s'est inscrit sur AngelMate :</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0 0 8px;color:#374151"><strong>Nom :</strong> {{user_name}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>E-mail :</strong> {{user_email}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Région d'origine :</strong> {{user_home_region}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Niveau de compétence :</strong> {{user_skill_level}}</p>
+    <p style="margin:0 0 8px;color:#374151"><strong>Langue :</strong> {{user_language}}</p>
+    <p style="margin:0;color:#374151"><strong>Inscrit le :</strong> {{registration_time}}</p>
+  </div>
+  <p style="margin:0;font-size:13px;color:#6b7280">Ce message a été généré automatiquement.</p>`)
+    }
+  },
 ];
 
 async function main() {
