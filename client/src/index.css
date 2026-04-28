@@ -23,7 +23,7 @@
 
   /* Photos — served locally from /images/ */
   --photo-hero:      url('/images/hero.jpg');
-  --photo-dashboard: url('/images/dashboard.jpg');
+  --photo-dashboard: url('/images/dashboard_fisher.jpg');
   --photo-catches:   url('/images/catches.jpg');
   --photo-fish:      url('/images/fish.jpg');
   --photo-spots:     url('/images/spots.jpg');
