@@ -2,6 +2,7 @@ import { z } from 'zod';
 import prisma from '../config/prisma.js';
 import { AppError } from '../utils/app-error.js';
 import { catchAsync } from '../utils/catch-async.js';
+import { sendCommentNotificationMail } from '../utils/mailer.js';
 
 const USER_SELECT = { id: true, name: true, skillLevel: true, homeRegion: true, avatarBase64: true };
 
@@ -59,7 +60,8 @@ export const addComment = catchAsync(async (req, res) => {
   const { text } = z.object({ text: z.string().min(1).max(500) }).parse(req.body);
 
   const item = await prisma.catch.findFirst({
-    where: { id: req.params.catchId, isPublic: true }
+    where: { id: req.params.catchId, isPublic: true },
+    include: { user: { select: { id: true, name: true, email: true, language: true } } }
   });
   if (!item) throw new AppError('Fang nicht gefunden.', 404);
 
@@ -67,6 +69,20 @@ export const addComment = catchAsync(async (req, res) => {
     data: { text, userId: req.user.id, catchId: req.params.catchId },
     include: { user: { select: USER_SELECT } }
   });
+
+  // Send notification email to catch owner if not the same user
+  if (item.userId !== req.user.id) {
+    const catchOwner = item.user;
+    sendCommentNotificationMail({
+      to: catchOwner.email,
+      catchOwnerName: catchOwner.name,
+      commentFromName: req.user.name,
+      commentBody: text,
+      lang: catchOwner.language || 'de'
+    }).catch(err => {
+      console.error('[community] Error sending comment notification:', err);
+    });
+  }
 
   res.status(201).json(comment);
 });

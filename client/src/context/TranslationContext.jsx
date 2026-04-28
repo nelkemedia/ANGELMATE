@@ -35,8 +35,20 @@ export function TranslationProvider({ children }) {
     fetchTranslations(lang);
   }
 
-  function t(key, vars = {}) {
-    let s = translations[key] ?? key;
+  function t(key, varsOrFallback = {}, fallback) {
+    let vars = {};
+    let finalFallback = key;
+
+    if (typeof varsOrFallback === 'string') {
+      finalFallback = varsOrFallback;
+    } else if (typeof varsOrFallback === 'object' && varsOrFallback !== null) {
+      vars = varsOrFallback;
+      if (fallback !== undefined) {
+        finalFallback = fallback;
+      }
+    }
+
+    let s = translations[key] ?? finalFallback;
     for (const [k, v] of Object.entries(vars)) {
       s = s.replaceAll(`{{${k}}}`, String(v ?? ''));
     }

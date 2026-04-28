@@ -178,3 +178,22 @@ export async function sendPasswordResetMail({ to, name, resetLink, lang = 'de' }
   });
   return true;
 }
+
+export async function sendCommentNotificationMail({ to, catchOwnerName, commentFromName, commentBody, lang = 'de' }) {
+  const transport = await createTransport();
+  if (!transport) {
+    console.warn('[mailer] Kein SMTP konfiguriert – Comment-Notification nicht versendet.');
+    return false;
+  }
+  const rendered = await renderTemplate('new_comment_in_feed', lang, {
+    catch_owner_name: catchOwnerName,
+    comment_from: commentFromName,
+    comment_body: commentBody
+  });
+  if (rendered) {
+    await transport.sendMail({ from: await fromAddress(), to, subject: rendered.subject, html: rendered.body });
+    return true;
+  }
+  console.warn('[mailer] Template "new_comment_in_feed" nicht gefunden.');
+  return false;
+}

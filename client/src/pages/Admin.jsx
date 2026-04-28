@@ -1078,6 +1078,7 @@ function AdsTab() {
 const TEMPLATE_META = {
   email_verification: { label: '✅ E-Mail-Bestätigung', vars: ['{{name}}', '{{verifyLink}}'] },
   password_reset:     { label: '🔑 Passwort zurücksetzen', vars: ['{{name}}', '{{resetLink}}'] },
+  new_comment_in_feed: { label: 'ℹ️ Neuer Kommentar', vars: ['{{catch_owner_name}}', '{{comment_from}}', '{{comment_body}}'] },
 };
 
 function EmailTemplatesTab() {
