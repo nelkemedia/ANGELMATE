@@ -2507,8 +2507,9 @@ img { max-width: 100%; height: auto; }
 .ad-banner-img {
   width: 100%;
   display: block;
-  object-fit: cover;
-  max-height: 250px;
+  object-fit: contain;
+  object-position: center;
+  max-height: 160px;
 }
 
 /* Card */
@@ -2532,7 +2533,8 @@ img { max-width: 100%; height: auto; }
 .ad-card-img {
   width: 80px;
   height: 80px;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border-radius: 8px;
   flex-shrink: 0;
 }
