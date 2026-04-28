@@ -132,6 +132,7 @@ export const api = {
   },
   ads: {
     current:          (position) => request(`/ads/current?position=${position}`),
+    allForPosition:    (position) => request(`/ads/all?position=${position}`),
     trackClick:       (id)       => request(`/ads/${id}/click`,      { method: 'POST' }),
     trackImpression:  (id)       => request(`/ads/${id}/impression`, { method: 'POST' }),
     admin: {

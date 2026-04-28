@@ -2489,6 +2489,16 @@ img { max-width: 100%; height: auto; }
 
 /* ── Ad Components ───────────────────────────────────────────────────────── */
 
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ad-item {
+  width: 100%;
+}
+
 .ad-label {
   position: absolute;
   top: 8px;

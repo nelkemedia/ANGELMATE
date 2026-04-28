@@ -49,6 +49,30 @@ export const getCurrentAd = catchAsync(async (req, res) => {
   res.json({ ad });
 });
 
+export const getAdsForPosition = catchAsync(async (req, res) => {
+  const { position } = req.query;
+  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].includes(position)) {
+    throw new AppError('Invalid position', 400, 'INVALID_POSITION');
+  }
+
+  const now = new Date();
+  const ads = await prisma.ad.findMany({
+    where: {
+      positions: { has: position },
+      isActive: true,
+      OR: [{ startsAt: null }, { startsAt: { lte: now } }],
+      AND: { OR: [{ endsAt: null }, { endsAt: { gte: now } }] }
+    },
+    orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+    select: {
+      id: true, format: true, imageBase64: true,
+      linkUrl: true, title: true, description: true
+    }
+  });
+
+  res.json({ ads });
+});
+
 export const trackClick = catchAsync(async (req, res) => {
   const id = parseInt(req.params.id);
   await prisma.ad.update({ where: { id }, data: { clickCount: { increment: 1 } } }).catch(() => {});

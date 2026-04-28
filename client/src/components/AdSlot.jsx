@@ -4,20 +4,30 @@ import AdBanner from './AdBanner';
 import AdCard from './AdCard';
 
 export default function AdSlot({ position }) {
-  const [ad, setAd] = useState(undefined);
+  const [ads, setAds] = useState([]);
 
   useEffect(() => {
-    api.ads.current(position)
+    api.ads.allForPosition(position)
       .then((data) => {
-        setAd(data.ad);
-        if (data.ad) api.ads.trackImpression(data.ad.id).catch(() => {});
+        setAds(data.ads || []);
+        (data.ads || []).forEach((ad) => {
+          api.ads.trackImpression(ad.id).catch(() => {});
+        });
       })
-      .catch(() => setAd(null));
+      .catch(() => setAds([]));
   }, [position]);
 
-  if (!ad) return null;
+  if (ads.length === 0) return null;
 
-  return ad.format === 'BANNER'
-    ? <AdBanner ad={ad} />
-    : <AdCard ad={ad} />;
+  return (
+    <div className="ad-slot">
+      {ads.map((ad) => (
+        <div key={ad.id} className="ad-item">
+          {ad.format === 'BANNER'
+            ? <AdBanner ad={ad} />
+            : <AdCard ad={ad} />}
+        </div>
+      ))}
+    </div>
+  );
 }

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { protect } from '../middleware/auth.middleware.js';
 import { requireAdmin } from '../middleware/admin.middleware.js';
 import {
-  getCurrentAd, trackClick, trackImpression,
+  getCurrentAd, getAdsForPosition, trackClick, trackImpression,
   getAdvertisers, createAdvertiser, updateAdvertiser, deleteAdvertiser,
   getAds, createAd, updateAd, deleteAd
 } from '../controllers/ads.controller.js';
@@ -11,6 +11,7 @@ const router = Router();
 
 // Public
 router.get('/current',              getCurrentAd);
+router.get('/all',                  getAdsForPosition);
 router.post('/:id/click',           trackClick);
 router.post('/:id/impression',      trackImpression);
 
