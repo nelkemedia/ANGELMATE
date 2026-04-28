@@ -586,6 +586,58 @@ async function main() {
   const result = await prisma.translation.createMany({ data: rows, skipDuplicates: true });
   console.log(`Seeded ${result.count} translation rows (${KEYS.length} keys × 3 locales).`);
 
+  // Email Templates
+  const emailTemplates = [
+    {
+      name: 'new_comment_in_feed',
+      locale: 'de',
+      subject: '[AngelMate] Neuer Kommentar zu deinem Fang',
+      body: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+  <h2 style="color:#166534;margin:0 0 16px">🎣 AngelMate</h2>
+  <p style="margin:0 0 12px">Hallo {{catch_owner_name}},</p>
+  <p style="margin:0 0 24px"><strong>{{comment_from}}</strong> hat einen Kommentar zu deinem Fang hinterlassen:</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0;font-style:italic;color:#374151">{{comment_body}}</p>
+  </div>
+  <p style="margin:0 0 24px">Melde dich in AngelMate an, um den Kommentar in voller Länge zu sehen und zu antworten.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+  <p style="margin:0;color:#9ca3af;font-size:12px">AngelMate – Dein digitaler Angelbegleiter</p>
+</div>`
+    },
+    {
+      name: 'new_comment_in_feed',
+      locale: 'en',
+      subject: '[AngelMate] New comment on your catch',
+      body: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+  <h2 style="color:#166534;margin:0 0 16px">🎣 AngelMate</h2>
+  <p style="margin:0 0 12px">Hello {{catch_owner_name}},</p>
+  <p style="margin:0 0 24px"><strong>{{comment_from}}</strong> has left a comment on your catch:</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0;font-style:italic;color:#374151">{{comment_body}}</p>
+  </div>
+  <p style="margin:0 0 24px">Sign in to AngelMate to view the full comment and reply.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+  <p style="margin:0;color:#9ca3af;font-size:12px">AngelMate – Your digital fishing companion</p>
+</div>`
+    },
+    {
+      name: 'new_comment_in_feed',
+      locale: 'fr',
+      subject: '[AngelMate] Nouveau commentaire sur votre prise',
+      body: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+  <h2 style="color:#166534;margin:0 0 16px">🎣 AngelMate</h2>
+  <p style="margin:0 0 12px">Bonjour {{catch_owner_name}},</p>
+  <p style="margin:0 0 24px"><strong>{{comment_from}}</strong> a laissé un commentaire sur votre prise :</p>
+  <div style="background:#f3f4f6;border-left:4px solid #166534;padding:16px;margin:0 0 24px;border-radius:4px">
+    <p style="margin:0;font-style:italic;color:#374151">{{comment_body}}</p>
+  </div>
+  <p style="margin:0 0 24px">Connectez-vous à AngelMate pour voir le commentaire en entier et répondre.</p>
+  <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
+  <p style="margin:0;color:#9ca3af;font-size:12px">AngelMate – Votre compagnon de pêche numérique</p>
+</div>`
+    }
+  ];
+
   // Use upsert to handle both new and existing templates
   for (const template of emailTemplates) {
     await prisma.emailTemplate.upsert({
