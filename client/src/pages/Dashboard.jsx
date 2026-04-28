@@ -100,8 +100,8 @@ export default function Dashboard() {
 
               <div className="stat-card stat-card--species">
                 <div className="stat-card-body">
-                  <div className="stat-label">LIEBLINGSART</div>
-                  <div className="stat-number" style={{ fontSize: stats.favoriteSpecies && stats.favoriteSpecies.length > 8 ? '1.1rem' : undefined }}>
+                  <div className="stat-label">{t('dashboard.stat_favsort','LIEBLINGSART')}</div>
+                  <div className="stat-number">
                     {stats.favoriteSpecies ?? '–'}
                   </div>
                   <div className="stat-sub">{t('dashboard.stat_favorite')}</div>
@@ -111,7 +111,7 @@ export default function Dashboard() {
 
               <div className="stat-card stat-card--weight">
                 <div className="stat-card-body">
-                  <div className="stat-label">SCHWERSTER FANG</div>
+                  <div className="stat-label">{t('dashboard.stat_biggest_by_weight','SCHWERSTER FANG')}</div>
                   <div className="stat-number">{stats.biggestByWeight ? `${stats.biggestByWeight.weight} kg` : '–'}</div>
                   <div className="stat-sub">{stats.biggestByWeight ? stats.biggestByWeight.fishSpecies : 'Noch kein Rekord'}</div>
                 </div>
@@ -120,7 +120,7 @@ export default function Dashboard() {
 
               <div className="stat-card stat-card--length">
                 <div className="stat-card-body">
-                  <div className="stat-label">LÄNGSTER FANG</div>
+                  <div className="stat-label">{t('dashboard.stat_biggest_by_length','LÄNGSTER FANG')}</div>
                   <div className="stat-number">{stats.biggestByLength ? `${stats.biggestByLength.length} cm` : '–'}</div>
                   <div className="stat-sub">{stats.biggestByLength ? stats.biggestByLength.fishSpecies : 'Noch kein Rekord'}</div>
                 </div>

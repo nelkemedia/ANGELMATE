@@ -336,7 +336,7 @@ input, select, textarea { font: inherit; }
 .stat-card.primary .stat-label { color: rgba(255,255,255,.75); }
 .stat-card.primary .stat-sub { color: rgba(255,255,255,.65); }
 .stat-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
-.stat-number { font-size: 1.9rem; font-weight: 900; line-height: 1; }
+.stat-number { font-size: clamp(0.95rem, 2vw, 1.9rem); font-weight: 900; line-height: 1; }
 .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
 
