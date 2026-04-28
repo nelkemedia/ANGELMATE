@@ -128,5 +128,20 @@ export const api = {
       request('/ai/identify-fish', { method: 'POST', body: JSON.stringify({ imageBase64, mimeType, lang }) }),
     analyzeForecast: (weather, location, lang = 'de') =>
       request('/ai/analyze-forecast', { method: 'POST', body: JSON.stringify({ weather, location, lang }) })
+  },
+  ads: {
+    current:          (position) => request(`/ads/current?position=${position}`),
+    trackClick:       (id)       => request(`/ads/${id}/click`,      { method: 'POST' }),
+    trackImpression:  (id)       => request(`/ads/${id}/impression`, { method: 'POST' }),
+    admin: {
+      getAdvertisers:    ()           => request('/ads/admin/advertisers'),
+      createAdvertiser:  (data)       => request('/ads/admin/advertisers',    { method: 'POST',   body: JSON.stringify(data) }),
+      updateAdvertiser:  (id, data)   => request(`/ads/admin/advertisers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+      deleteAdvertiser:  (id)         => request(`/ads/admin/advertisers/${id}`, { method: 'DELETE' }),
+      getAds:            (params)     => request(`/ads/admin?${new URLSearchParams(params ?? {})}`),
+      createAd:          (data)       => request('/ads/admin',      { method: 'POST',   body: JSON.stringify(data) }),
+      updateAd:          (id, data)   => request(`/ads/admin/${id}`, { method: 'PUT',   body: JSON.stringify(data) }),
+      deleteAd:          (id)         => request(`/ads/admin/${id}`, { method: 'DELETE' })
+    }
   }
 };

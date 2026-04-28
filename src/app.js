@@ -17,6 +17,7 @@ import leaderboardRoutes from './routes/leaderboard.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import translationRoutes from './routes/translations.routes.js';
+import adsRoutes from './routes/ads.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -70,6 +71,7 @@ app.use('/api', leaderboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin',  adminRoutes);
 app.use('/api/translations', translationRoutes);
+app.use('/api/ads', adsRoutes);
 
 if (process.env.NODE_ENV === 'production') {
   const clientDist = join(__dirname, '..', 'client', 'dist');

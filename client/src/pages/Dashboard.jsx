@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import PhotoLightbox from '../components/PhotoLightbox';
+import AdSlot from '../components/AdSlot';
 
 function HeroWave() {
   return (
@@ -62,7 +63,7 @@ export default function Dashboard() {
     <div>
       <div className="dashboard-hero">
         <div className="dashboard-hero-content">
-          <h2>{t('dashboard.greeting', { name: user?.name })} 👋</h2>
+          <h2>{t('dashboard.greeting', { name: user?.name })}</h2>
           <p className="dashboard-hero-sub">Bereit für deinen nächsten großen Fang?</p>
           <div className="dashboard-hero-badges">
             <span className="hero-badge">🌿 {skillLabel}</span>
@@ -164,6 +165,8 @@ export default function Dashboard() {
             </div>
           </>
         )}
+
+        <AdSlot position="DASHBOARD" />
 
         <div className="quick-links">
           <Link to="/catches" className="quick-link ql-catches">

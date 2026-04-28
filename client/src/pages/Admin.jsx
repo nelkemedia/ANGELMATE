@@ -31,6 +31,9 @@ export default function Admin() {
         <button className={`community-tab ${tab === 'emails' ? 'community-tab-active' : ''}`} onClick={() => setTab('emails')}>
           ✉️ {t('admin.tab_emails')}
         </button>
+        <button className={`community-tab ${tab === 'ads' ? 'community-tab-active' : ''}`} onClick={() => setTab('ads')}>
+          📢 Werbung
+        </button>
       </div>
 
       {tab === 'reports'      && <ReportsTab />}
@@ -38,6 +41,7 @@ export default function Admin() {
       {tab === 'smtp'         && <SmtpTab />}
       {tab === 'translations' && <TranslationsTab />}
       {tab === 'emails'       && <EmailTemplatesTab />}
+      {tab === 'ads'          && <AdsTab />}
     </div>
   );
 }
@@ -684,6 +688,387 @@ function TranslationsTab() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// ── Ads Tab ───────────────────────────────────────────────────────────────────
+
+const EMPTY_ADVERTISER = { name: '', contactEmail: '', logoBase64: '' };
+const EMPTY_AD = { advertiserId: '', format: 'BANNER', position: 'DASHBOARD', imageBase64: '', linkUrl: '', title: '', description: '', isActive: false, startsAt: '', endsAt: '', priority: 0 };
+
+function AdsTab() {
+  const [advertisers, setAdvertisers] = useState([]);
+  const [ads,         setAds]         = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [section,     setSection]     = useState('advertisers');
+
+  const [advForm,     setAdvForm]     = useState(EMPTY_ADVERTISER);
+  const [editAdvId,   setEditAdvId]   = useState(null);
+  const [advSaving,   setAdvSaving]   = useState(false);
+  const [advMsg,      setAdvMsg]      = useState(null);
+
+  const [adForm,      setAdForm]      = useState(EMPTY_AD);
+  const [editAdId,    setEditAdId]    = useState(null);
+  const [adSaving,    setAdSaving]    = useState(false);
+  const [adMsg,       setAdMsg]       = useState(null);
+
+  async function loadAll() {
+    setLoading(true);
+    try {
+      const [advRes, adsRes] = await Promise.all([
+        api.ads.admin.getAdvertisers(),
+        api.ads.admin.getAds()
+      ]);
+      setAdvertisers(advRes.advertisers);
+      setAds(adsRes.ads);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  }
+
+  useEffect(() => { loadAll(); }, []);
+
+  // ── Advertiser handlers ────────────────────────────────────────────────────
+
+  function startEditAdv(adv) {
+    setEditAdvId(adv.id);
+    setAdvForm({ name: adv.name, contactEmail: adv.contactEmail, logoBase64: adv.logoBase64 ?? '' });
+    setAdvMsg(null);
+  }
+
+  function cancelAdv() { setEditAdvId(null); setAdvForm(EMPTY_ADVERTISER); setAdvMsg(null); }
+
+  async function submitAdv(e) {
+    e.preventDefault();
+    setAdvSaving(true); setAdvMsg(null);
+    try {
+      const payload = { ...advForm, logoBase64: advForm.logoBase64 || null };
+      if (editAdvId) {
+        const { advertiser } = await api.ads.admin.updateAdvertiser(editAdvId, payload);
+        setAdvertisers((prev) => prev.map((a) => a.id === editAdvId ? { ...a, ...advertiser } : a));
+      } else {
+        const { advertiser } = await api.ads.admin.createAdvertiser(payload);
+        setAdvertisers((prev) => [{ ...advertiser, _count: { ads: 0 } }, ...prev]);
+      }
+      cancelAdv();
+    } catch (e) { setAdvMsg(e.message); }
+    finally { setAdvSaving(false); }
+  }
+
+  async function deleteAdv(id) {
+    if (!window.confirm('Werbenden wirklich löschen? Alle zugehörigen Anzeigen werden ebenfalls gelöscht.')) return;
+    try {
+      await api.ads.admin.deleteAdvertiser(id);
+      setAdvertisers((prev) => prev.filter((a) => a.id !== id));
+      setAds((prev) => prev.filter((a) => a.advertiserId !== id));
+    } catch (e) { alert(e.message); }
+  }
+
+  // ── Ad handlers ───────────────────────────────────────────────────────────
+
+  function startEditAd(ad) {
+    setEditAdId(ad.id);
+    setAdForm({
+      advertiserId: ad.advertiserId,
+      format:       ad.format,
+      position:     ad.position,
+      imageBase64:  ad.imageBase64,
+      linkUrl:      ad.linkUrl,
+      title:        ad.title ?? '',
+      description:  ad.description ?? '',
+      isActive:     ad.isActive,
+      startsAt:     ad.startsAt ? ad.startsAt.slice(0, 16) : '',
+      endsAt:       ad.endsAt   ? ad.endsAt.slice(0, 16)   : '',
+      priority:     ad.priority
+    });
+    setAdMsg(null);
+  }
+
+  function cancelAd() { setEditAdId(null); setAdForm(EMPTY_AD); setAdMsg(null); }
+
+  async function submitAd(e) {
+    e.preventDefault();
+    setAdSaving(true); setAdMsg(null);
+    const payload = {
+      advertiserId: parseInt(adForm.advertiserId),
+      format:       adForm.format,
+      position:     adForm.position,
+      imageBase64:  adForm.imageBase64,
+      linkUrl:      adForm.linkUrl,
+      title:        adForm.title   || null,
+      description:  adForm.description || null,
+      isActive:     adForm.isActive,
+      startsAt:     adForm.startsAt ? new Date(adForm.startsAt).toISOString() : null,
+      endsAt:       adForm.endsAt   ? new Date(adForm.endsAt).toISOString()   : null,
+      priority:     parseInt(adForm.priority) || 0
+    };
+    try {
+      if (editAdId) {
+        const { ad } = await api.ads.admin.updateAd(editAdId, payload);
+        setAds((prev) => prev.map((a) => a.id === editAdId ? ad : a));
+      } else {
+        const { ad } = await api.ads.admin.createAd(payload);
+        setAds((prev) => [ad, ...prev]);
+      }
+      cancelAd();
+    } catch (e) { setAdMsg(e.message); }
+    finally { setAdSaving(false); }
+  }
+
+  async function toggleActive(ad) {
+    try {
+      const { ad: updated } = await api.ads.admin.updateAd(ad.id, { isActive: !ad.isActive });
+      setAds((prev) => prev.map((a) => a.id === ad.id ? updated : a));
+    } catch (e) { alert(e.message); }
+  }
+
+  async function deleteAd(id) {
+    if (!window.confirm('Anzeige wirklich löschen?')) return;
+    try {
+      await api.ads.admin.deleteAd(id);
+      setAds((prev) => prev.filter((a) => a.id !== id));
+    } catch (e) { alert(e.message); }
+  }
+
+  function handleImageUpload(field) {
+    return (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => field === 'logo'
+        ? setAdvForm((f) => ({ ...f, logoBase64: ev.target.result }))
+        : setAdForm((f) => ({ ...f, imageBase64: ev.target.result }));
+      reader.readAsDataURL(file);
+    };
+  }
+
+  if (loading) return <div className="loading">Laden…</div>;
+
+  const positionLabel = { FEED: '📰 Feed', DASHBOARD: '🏠 Dashboard' };
+  const formatLabel   = { BANNER: 'Banner', CARD: 'Karte' };
+
+  return (
+    <div className="admin-section">
+      <div className="community-tabs" style={{ marginBottom: '1.5rem' }}>
+        <button className={`community-tab ${section === 'advertisers' ? 'community-tab-active' : ''}`} onClick={() => setSection('advertisers')}>
+          🏢 Werbende ({advertisers.length})
+        </button>
+        <button className={`community-tab ${section === 'ads' ? 'community-tab-active' : ''}`} onClick={() => setSection('ads')}>
+          📢 Anzeigen ({ads.length})
+        </button>
+      </div>
+
+      {/* ── Advertiser Section ────────────────────────────────────────────── */}
+      {section === 'advertisers' && (
+        <>
+          <form onSubmit={submitAdv} className="ads-form">
+            <h4 className="ads-form-title">
+              {editAdvId ? '✏️ Werbenden bearbeiten' : '➕ Neuer Werbender'}
+            </h4>
+            <div className="smtp-row">
+              <div className="field">
+                <label>Name</label>
+                <input value={advForm.name} onChange={(e) => setAdvForm((f) => ({ ...f, name: e.target.value }))} placeholder="Firma GmbH" required />
+              </div>
+              <div className="field">
+                <label>Kontakt-E-Mail</label>
+                <input type="email" value={advForm.contactEmail} onChange={(e) => setAdvForm((f) => ({ ...f, contactEmail: e.target.value }))} placeholder="kontakt@firma.de" required />
+              </div>
+            </div>
+            <div className="field">
+              <label>Logo (optional)</label>
+              <input type="file" accept="image/*" onChange={handleImageUpload('logo')} />
+              {advForm.logoBase64 && <img src={advForm.logoBase64} alt="Logo Vorschau" className="ads-logo-preview" />}
+            </div>
+            {advMsg && <div className="error-msg">⚠️ {advMsg}</div>}
+            <div className="smtp-actions">
+              <button type="submit" className="btn-primary" disabled={advSaving}>
+                {advSaving ? '⏳ Speichern…' : editAdvId ? '💾 Aktualisieren' : '➕ Anlegen'}
+              </button>
+              {editAdvId && <button type="button" className="btn-ghost" onClick={cancelAdv}>Abbrechen</button>}
+            </div>
+          </form>
+
+          <div className="admin-table-wrap" style={{ marginTop: '1.5rem' }}>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>E-Mail</th>
+                  <th>Anzeigen</th>
+                  <th>Erstellt</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {advertisers.length === 0 && (
+                  <tr><td colSpan={5} className="admin-empty">Noch keine Werbenden</td></tr>
+                )}
+                {advertisers.map((adv) => (
+                  <tr key={adv.id}>
+                    <td>
+                      {adv.logoBase64 && <img src={adv.logoBase64} alt="" style={{ height: 24, marginRight: 8, verticalAlign: 'middle', borderRadius: 4 }} />}
+                      <strong>{adv.name}</strong>
+                    </td>
+                    <td>{adv.contactEmail}</td>
+                    <td>{adv._count.ads}</td>
+                    <td>{new Date(adv.createdAt).toLocaleDateString('de-DE')}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn-ghost admin-btn-sm" onClick={() => startEditAdv(adv)}>✏️</button>
+                        <button className="btn-danger-ghost admin-btn-sm" onClick={() => deleteAdv(adv.id)}>🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* ── Ads Section ───────────────────────────────────────────────────── */}
+      {section === 'ads' && (
+        <>
+          <form onSubmit={submitAd} className="ads-form">
+            <h4 className="ads-form-title">
+              {editAdId ? '✏️ Anzeige bearbeiten' : '➕ Neue Anzeige'}
+            </h4>
+
+            <div className="smtp-row smtp-row-3">
+              <div className="field">
+                <label>Werbender</label>
+                <select value={adForm.advertiserId} onChange={(e) => setAdForm((f) => ({ ...f, advertiserId: e.target.value }))} required>
+                  <option value="">– auswählen –</option>
+                  {advertisers.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              </div>
+              <div className="field">
+                <label>Format</label>
+                <select value={adForm.format} onChange={(e) => setAdForm((f) => ({ ...f, format: e.target.value }))}>
+                  <option value="BANNER">Banner (Bild + Link)</option>
+                  <option value="CARD">Karte (Bild + Text + Link)</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Position</label>
+                <select value={adForm.position} onChange={(e) => setAdForm((f) => ({ ...f, position: e.target.value }))}>
+                  <option value="DASHBOARD">🏠 Dashboard</option>
+                  <option value="FEED">📰 Community Feed</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="field">
+              <label>Bild</label>
+              <input type="file" accept="image/*" onChange={handleImageUpload('ad')} />
+              {adForm.imageBase64 && <img src={adForm.imageBase64} alt="Vorschau" className="ads-img-preview" />}
+            </div>
+
+            <div className="field">
+              <label>Ziel-URL</label>
+              <input type="url" value={adForm.linkUrl} onChange={(e) => setAdForm((f) => ({ ...f, linkUrl: e.target.value }))} placeholder="https://www.firma.de" required />
+            </div>
+
+            {adForm.format === 'CARD' && (
+              <>
+                <div className="field">
+                  <label>Titel (optional)</label>
+                  <input value={adForm.title} onChange={(e) => setAdForm((f) => ({ ...f, title: e.target.value }))} placeholder="Anzeigen-Titel" maxLength={100} />
+                </div>
+                <div className="field">
+                  <label>Beschreibung (optional)</label>
+                  <textarea value={adForm.description} onChange={(e) => setAdForm((f) => ({ ...f, description: e.target.value }))} placeholder="Kurze Beschreibung…" maxLength={300} rows={2} />
+                </div>
+              </>
+            )}
+
+            <div className="smtp-row">
+              <div className="field">
+                <label>Von (optional)</label>
+                <input type="datetime-local" value={adForm.startsAt} onChange={(e) => setAdForm((f) => ({ ...f, startsAt: e.target.value }))} />
+              </div>
+              <div className="field">
+                <label>Bis (optional)</label>
+                <input type="datetime-local" value={adForm.endsAt} onChange={(e) => setAdForm((f) => ({ ...f, endsAt: e.target.value }))} />
+              </div>
+              <div className="field">
+                <label>Priorität (0–100)</label>
+                <input type="number" min={0} max={100} value={adForm.priority} onChange={(e) => setAdForm((f) => ({ ...f, priority: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="field-check">
+              <label>
+                <input type="checkbox" checked={adForm.isActive} onChange={(e) => setAdForm((f) => ({ ...f, isActive: e.target.checked }))} />
+                Anzeige ist aktiv
+              </label>
+            </div>
+
+            {adMsg && <div className="error-msg">⚠️ {adMsg}</div>}
+            <div className="smtp-actions">
+              <button type="submit" className="btn-primary" disabled={adSaving}>
+                {adSaving ? '⏳ Speichern…' : editAdId ? '💾 Aktualisieren' : '➕ Anlegen'}
+              </button>
+              {editAdId && <button type="button" className="btn-ghost" onClick={cancelAd}>Abbrechen</button>}
+            </div>
+          </form>
+
+          <div className="admin-table-wrap" style={{ marginTop: '1.5rem' }}>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Werbender</th>
+                  <th>Format</th>
+                  <th>Position</th>
+                  <th>Status</th>
+                  <th>Laufzeit</th>
+                  <th>Klicks</th>
+                  <th>Impressions</th>
+                  <th>Prio</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {ads.length === 0 && (
+                  <tr><td colSpan={9} className="admin-empty">Noch keine Anzeigen</td></tr>
+                )}
+                {ads.map((ad) => (
+                  <tr key={ad.id} className={!ad.isActive ? 'admin-row-inactive' : ''}>
+                    <td><strong>{ad.advertiser?.name}</strong></td>
+                    <td>{formatLabel[ad.format]}</td>
+                    <td>{positionLabel[ad.position]}</td>
+                    <td>
+                      <button
+                        className={`admin-badge ${ad.isActive ? 'admin-badge-ok' : 'admin-badge-warn'}`}
+                        style={{ cursor: 'pointer', border: 'none', padding: '2px 10px' }}
+                        onClick={() => toggleActive(ad)}
+                        title={ad.isActive ? 'Klicken zum Deaktivieren' : 'Klicken zum Aktivieren'}
+                      >
+                        {ad.isActive ? '● Aktiv' : '○ Inaktiv'}
+                      </button>
+                    </td>
+                    <td style={{ fontSize: '0.8rem' }}>
+                      {ad.startsAt ? new Date(ad.startsAt).toLocaleDateString('de-DE') : '–'}
+                      {' → '}
+                      {ad.endsAt   ? new Date(ad.endsAt).toLocaleDateString('de-DE')   : '∞'}
+                    </td>
+                    <td>{ad.clickCount}</td>
+                    <td>{ad.impressionCount}</td>
+                    <td>{ad.priority}</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn-ghost admin-btn-sm" onClick={() => { setSection('ads'); startEditAd(ad); }}>✏️</button>
+                        <button className="btn-danger-ghost admin-btn-sm" onClick={() => deleteAd(ad.id)}>🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

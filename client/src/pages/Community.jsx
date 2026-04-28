@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import Avatar from '../components/Avatar';
+import AdSlot from '../components/AdSlot';
 import PhotoLightbox from '../components/PhotoLightbox';
 
 const SKILL_EMOJI = { beginner: '🐣', intermediate: '🎯', advanced: '🏆' };
@@ -52,6 +53,7 @@ function FeedTab() {
   const [pages, setPages]     = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState('');
+  const AD_AFTER_ITEM = 3;
 
   async function load(p = 1) {
     setLoading(true);
@@ -99,17 +101,20 @@ function FeedTab() {
       )}
 
       <div className="feed">
-        {items.map((c) => (
-          <FeedCard
-            key={c.id}
-            catch_={c}
-            currentUserId={user?.id}
-            currentUser={user}
-            onLike={handleLike}
-            onCommentCountChange={(id, delta) =>
-              setItems((prev) => prev.map((x) => x.id === id ? { ...x, commentCount: x.commentCount + delta } : x))
-            }
-          />
+        {items.map((c, idx) => (
+          <>
+            <FeedCard
+              key={c.id}
+              catch_={c}
+              currentUserId={user?.id}
+              currentUser={user}
+              onLike={handleLike}
+              onCommentCountChange={(id, delta) =>
+                setItems((prev) => prev.map((x) => x.id === id ? { ...x, commentCount: x.commentCount + delta } : x))
+              }
+            />
+            {idx === AD_AFTER_ITEM - 1 && <AdSlot key="feed-ad" position="FEED" />}
+          </>
         ))}
       </div>
 
