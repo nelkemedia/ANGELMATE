@@ -3,6 +3,7 @@ import { api } from '../api/client';
 import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import PhotoLightbox from '../components/PhotoLightbox';
+import AdSlot from '../components/AdSlot';
 
 function useLockBody(active) {
   useEffect(() => {
@@ -153,7 +154,7 @@ export default function Catches() {
           <p>{t('catches.subtitle')}</p>
         </div>
       </div>
-
+      <AdSlot position="CATCHES_TOP" />
       <div className="page">
         <div className="page-header">
           <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>

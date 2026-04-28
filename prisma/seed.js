@@ -562,6 +562,7 @@ const KEYS = [
 
 async function main() {
   const passwordHash = await import('bcryptjs').then(m => m.default.hash('password123', 12));
+  const adminPasswordHash = await import('bcryptjs').then(m => m.default.hash('angeln123', 12));
 
   const demoUser = await prisma.user.upsert({
     where: { email: 'max@example.com' },
@@ -578,6 +579,24 @@ async function main() {
     where:  { userId: demoUser.id },
     update: {},
     create: { userId: demoUser.id, status: 'ACTIVE' },
+  });
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@test.de' },
+    update: {},
+    create: {
+      name: 'Default Admin',
+      email: 'admin@test.de',
+      adminPasswordHash,
+      role: 'ADMIN',
+      homeRegion: 'Berlin/Brandenburg',
+      skillLevel: 'intermediate',
+    },
+  });
+  await prisma.userStatus.upsert({
+    where:  { userId: adminUser.id },
+    update: {},
+    create: { userId: adminUser.id, status: 'ACTIVE' },
   });
 
   const rows = KEYS.flatMap((k) =>

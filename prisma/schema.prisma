@@ -194,6 +194,10 @@ enum AdPosition {
   FEED
   DASHBOARD_TOP
   DASHBOARD_BOTTOM
+  CATCHES_TOP
+  CATCHES_BOTTOM
+  SPOTS_TOP
+  BITES_TOP
 }
 
 model Advertiser {

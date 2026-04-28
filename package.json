@@ -1,7 +1,7 @@
 {
   "name": "anglemate-starter",
-  "version": "1.0.0",
-  "description": "Starter backend for an angling app built with Node.js, Express, Prisma and PostgreSQL",
+  "version": "2.0.5",
+  "description": "AngelMate - Deine App für den Angelsport. Verfolge deine Fänge, teile sie mit Freunden und entdecke neue Angelplätze in deiner Nähe.",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

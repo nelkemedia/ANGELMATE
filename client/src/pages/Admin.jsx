@@ -861,7 +861,7 @@ function AdsTab() {
 
   if (loading) return <div className="loading">Laden…</div>;
 
-  const positionLabel = { FEED: '📰 Feed', DASHBOARD_TOP: '🏠 Dashboard (oben)', DASHBOARD_BOTTOM: '🏠 Dashboard (unten)' };
+  const positionLabel = { FEED: '📰 Feed', DASHBOARD_TOP: '🏠 Dashboard (oben)', DASHBOARD_BOTTOM: '🏠 Dashboard (unten)', CATCHES_TOP: 'Fangbuch (oben)', CATCHES_BOTTOM: 'Fangbuch (unten)', SPOTS_TOP: 'Angelspots', BITES_TOP: 'Bissindex' };
   const formatLabel   = { BANNER: 'Banner', CARD: 'Karte' };
 
   return (
@@ -970,7 +970,7 @@ function AdsTab() {
               <div className="field">
                 <label>Positionen (mind. eine)</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].map((pos) => (
+                  {['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM', 'CATCHES_TOP', 'CATCHES_BOTTOM', 'SPOTS_TOP', 'BITES_TOP'].map((pos) => (
                     <label key={pos} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
