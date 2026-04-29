@@ -8,8 +8,9 @@
 - **Spots**: Private/öffentliche Angelplätze mit Karte
 - **Forecast / Beißindex**: Wetterbasierte Beißindex-Berechnung (Temperatur, Luftdruck, Wind, Bewölkung)
 - **Community Feed**: Öffentliche Fänge, Kommentare, Likes, wöchentliche "Catch of the Week"-Wahl
-- **User Profile**: Skill-Level, Heimatregion, Sprache, Avatar (Base64)
+- **User Profile**: Skill-Level, Heimatregion, Sprache, Avatar (Base64), Account-Löschung
 - **Admin Panel**: User-Verwaltung, Reports, Übersetzungen, E-Mail-Templates, SMTP-Einstellungen
+- **Werbung (Ads)**: Banner & Card-Ads an verschiedenen Positionen (Feed, Dashboard, Catches, Spots, Bites), mit Click/Impression-Tracking
 - **Mehrsprachigkeit**: DE / EN / FR (Übersetzungen in DB, via API geladen)
 - **KI**: Fischarten-Identifikation & Forecast-Analyse via Google Generative AI
 
@@ -92,6 +93,12 @@ Wichtige Models in `prisma/schema.prisma`:
 | `EmailTemplate` | name, locale, subject, htmlBody |
 | `SmtpSettings` | host, port, user, pass, fromName, fromEmail |
 | `UserStatus` | ACTIVE, INACTIVE, PENDING_VERIFICATION |
+| `Advertiser` | name, contactEmail, logoBase64 |
+| `Ad` | advertiserId, format (BANNER/CARD), positions (Array), imageBase64, linkUrl, title, description, isActive, startsAt, endsAt, priority, clickCount, impressionCount |
+| `WeeklyVote` | userId, catchId, week (ISO week string) — wöchentliche "Catch of the Week"-Wahl |
+| `Report` | senderName, senderEmail, against, reason, resolved — Meldungen von Missbrauch |
+| `PasswordResetToken` | userId, tokenHash, expiresAt |
+| `EmailVerificationToken` | userId, tokenHash, expiresAt |
 
 ---
 
@@ -103,9 +110,13 @@ Wichtige Models in `prisma/schema.prisma`:
 |---|---|---|
 | `POST /auth/register` | — | Account erstellen, Verifizierungs-Mail |
 | `POST /auth/login` | — | JWT zurückgeben |
+| `POST /auth/forgot-password` | — | Passwort-Reset-Mail senden |
+| `POST /auth/reset-password` | — | Passwort über Token zurücksetzen |
+| `GET /auth/verify-email` | — | E-Mail verifizieren |
 | `GET /auth/me` | ✓ | Aktueller User |
 | `PUT /auth/profile` | ✓ | Profil aktualisieren |
 | `PUT /auth/password` | ✓ | Passwort ändern |
+| `DELETE /auth/account` | ✓ | Account-Löschung (kaskadiert alle Daten) |
 | `GET /catches` | ✓ | Fangbuch des Users |
 | `POST /catches` | ✓ | Fang erstellen |
 | `PUT /catches/:id` | ✓ | Fang bearbeiten |
@@ -115,6 +126,18 @@ Wichtige Models in `prisma/schema.prisma`:
 | `POST /community/:id/like` | ✓ | Like toggeln |
 | `GET /forecast/today` | — | Beißindex berechnen |
 | `POST /ai/identify-fish` | ✓ | Fischart per Bild erkennen |
+| `GET /ads/current` | — | Aktuelle Ad für Position abrufen |
+| `GET /ads/all` | — | Alle aktiven Ads für Position abrufen |
+| `POST /ads/:id/click` | — | Click-Tracking für Ad |
+| `POST /ads/:id/impression` | — | Impression-Tracking für Ad |
+| `GET /ads/admin` | ADMIN | Alle Ads verwalten |
+| `POST /ads/admin` | ADMIN | Ad erstellen |
+| `PUT /ads/admin/:id` | ADMIN | Ad bearbeiten |
+| `DELETE /ads/admin/:id` | ADMIN | Ad löschen |
+| `GET /ads/admin/advertisers` | ADMIN | Advertisers auflisten |
+| `POST /ads/admin/advertisers` | ADMIN | Advertiser erstellen |
+| `PUT /ads/admin/advertisers/:id` | ADMIN | Advertiser bearbeiten |
+| `DELETE /ads/admin/advertisers/:id` | ADMIN | Advertiser löschen |
 | `GET /admin/*` | ADMIN | Admin-Verwaltung |
 | `GET /stats/overview` | ✓ | User-Statistiken |
 
@@ -243,6 +266,37 @@ Kein CSS-Framework. Alles in `client/src/index.css`.
 - `.stat-card` — Dashboard-Kacheln
 - `.error-msg` — Fehlermeldungen
 - `.avatar-img`, `.avatar-letter` — Avatar-Darstellung
+
+---
+
+## Werbesystem (Ads)
+
+**Struktur:**
+- `Advertiser`: Werbekunden mit Name, Kontakt-Email, Logo (Base64)
+- `Ad`: Einzelne Anzeigen mit Format (BANNER/CARD), Positionen, Bilder, Tracking
+- `AdPosition` enum: FEED, DASHBOARD_TOP, DASHBOARD_BOTTOM, CATCHES_TOP, CATCHES_BOTTOM, SPOTS_TOP, BITES_TOP
+
+**Features:**
+- zeitgesteuerte Anzeigen (startsAt, endsAt)
+- Prioritäts-Sortierung (höhere Priorität zuerst)
+- Click & Impression Tracking für Analytics
+- Admin-Panel zur Verwaltung von Advertisers und Ads
+- Öffentliche API zum Abrufen aktiver Ads nach Position
+
+**Public Endpoints:**
+- `GET /ads/current?position=FEED` — zufällige Ad für Position (höchste Priorität)
+- `GET /ads/all?position=FEED` — alle Ads für Position
+- `POST /ads/:id/click` — Click-Tracking
+- `POST /ads/:id/impression` — Impression-Tracking
+
+---
+
+## Account-Löschung
+
+**Feature:**
+- `DELETE /auth/account` (authenticated) löscht den User und alle assoziierten Daten
+- kaskadierendes Löschen: Catches, Spots, Comments, Likes, WeeklyVotes, etc.
+- **Achtung**: Nicht reversibel, keine Soft-Delete
 
 ---
 

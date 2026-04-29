@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat CLAUDE.md > /dev/null",
+            "statusMessage": "Loading project context...",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}
