@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/TranslationContext';
+import AdSlot from '../components/AdSlot';
 
 function useLockBody(active) {
   useEffect(() => {
@@ -209,7 +210,7 @@ export default function Spots() {
           <p>{t('spots.subtitle')}</p>
         </div>
       </div>
-
+      <AdSlot position="SPOTS_TOP" />
       <div className="page">
         <div className="page-header">
           <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>

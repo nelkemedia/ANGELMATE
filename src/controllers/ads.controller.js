@@ -12,7 +12,7 @@ const advertiserSchema = z.object({
 const adSchema = z.object({
   advertiserId: z.number().int().positive(),
   format:       z.enum(['BANNER', 'CARD']),
-  positions:    z.array(z.enum(['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'])).min(1),
+  positions:    z.array(z.enum(['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM', 'CATCHES_TOP', 'CATCHES_BOTTOM', 'SPOTS_TOP', 'BITES_TOP'])).min(1),
   imageBase64:  z.string().min(1),
   linkUrl:      z.string().url(),
   title:        z.string().max(100).optional().nullable(),
@@ -27,7 +27,7 @@ const adSchema = z.object({
 
 export const getCurrentAd = catchAsync(async (req, res) => {
   const { position } = req.query;
-  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].includes(position)) {
+  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM', 'CATCHES_TOP', 'CATCHES_BOTTOM', 'SPOTS_TOP', 'BITES_TOP'].includes(position)) {
     throw new AppError('Invalid position', 400, 'INVALID_POSITION');
   }
 
@@ -51,7 +51,7 @@ export const getCurrentAd = catchAsync(async (req, res) => {
 
 export const getAdsForPosition = catchAsync(async (req, res) => {
   const { position } = req.query;
-  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM'].includes(position)) {
+  if (!position || !['FEED', 'DASHBOARD_TOP', 'DASHBOARD_BOTTOM', 'CATCHES_TOP', 'CATCHES_BOTTOM', 'SPOTS_TOP', 'BITES_TOP'].includes(position)) {
     throw new AppError('Invalid position', 400, 'INVALID_POSITION');
   }
 
