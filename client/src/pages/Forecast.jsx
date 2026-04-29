@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api/client';
 import { useT } from '../context/TranslationContext';
+import AdSlot from '../components/AdSlot';
 
 const LEVEL_CONFIG = {
   excellent: { color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
