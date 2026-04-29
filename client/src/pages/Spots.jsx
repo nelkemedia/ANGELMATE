@@ -210,8 +210,8 @@ export default function Spots() {
           <p>{t('spots.subtitle')}</p>
         </div>
       </div>
-      <AdSlot position="SPOTS_TOP" />
       <div className="page">
+        <AdSlot position="SPOTS_TOP" />
         <div className="page-header">
           <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>
             {mySpots.length} {t('spots.my_count')}

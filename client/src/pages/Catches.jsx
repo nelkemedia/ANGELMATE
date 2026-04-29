@@ -154,8 +154,8 @@ export default function Catches() {
           <p>{t('catches.subtitle')}</p>
         </div>
       </div>
-      <AdSlot position="CATCHES_TOP" />
       <div className="page">
+        <AdSlot position="CATCHES_TOP" />
         <div className="page-header">
           <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)', fontWeight: 600 }}>
             {items.length} {items.length === 1 ? t('catches.entry_one') : t('catches.entry_many')}
@@ -213,6 +213,7 @@ export default function Catches() {
             ))}
           </div>
         )}
+        <AdSlot position="CATCHES_BOTTOM" />
       </div>
 
       {modal && (

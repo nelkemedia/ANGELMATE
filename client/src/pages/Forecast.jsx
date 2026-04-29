@@ -126,6 +126,7 @@ export default function Forecast() {
       </div>
 
       <div className="page">
+        <AdSlot position="BITES_TOP" />
         <div className="forecast-step-card">
           <div className="forecast-step-header">
             <span className="forecast-step-num">1</span>
