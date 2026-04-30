@@ -2270,12 +2270,12 @@ img { max-width: 100%; height: auto; }
 }
 .hero-wave { position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; line-height: 0; overflow: hidden; }
 .hero-wave svg { width: 100%; height: 56px; display: block; }
-.wave { animation: wave 8s ease-in-out infinite; }
-.wave-2 { animation: wave 10s ease-in-out infinite -2s; }
-.wave-3 { animation: wave 12s ease-in-out infinite -4s; }
+.wave { animation: wave 3s ease-in-out infinite; }
+.wave-2 { animation: wave 6s ease-in-out infinite -2s; }
+.wave-3 { animation: wave 8s ease-in-out infinite -4s; }
 @keyframes wave {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50% { transform: translateY(7px); }
 }
 
 /* Fun Fact Card */
