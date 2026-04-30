@@ -45,14 +45,14 @@ export default function Footer() {
             <span>AngelMate</span>
           </div>
           <p className="footer-tagline">
-            Dein digitaler Begleiter am Wasser.<br />
-            Für Angler. Für die Natur.
+            {t('footer.tagline_line1')}<br />
+            {t('footer.tagline_line2')}
           </p>
-          <div className="footer-social">
+          {/* <div className="footer-social">
             <a href="#" aria-label="Instagram" className="footer-social-btn"><IconInstagram /></a>
             <a href="#" aria-label="Facebook" className="footer-social-btn"><IconFacebook /></a>
             <a href="#" aria-label="YouTube" className="footer-social-btn"><IconYouTube /></a>
-          </div>
+          </div> */}
         </div>
 
         <div className="footer-col">
@@ -72,10 +72,10 @@ export default function Footer() {
         </div>
 
         <div className="footer-col">
-          <h4>Über uns</h4>
-          <Link to="/impressum">Kontakt</Link>
-          <Link to="/guidelines">Hilfe &amp; Support</Link>
-          <Link to="/report">Feedback</Link>
+          <h4>{t('footer.about')}</h4>
+          <Link to="/impressum">{t('footer.contact')}</Link>
+          <Link to="/guidelines">{t('footer.help')}</Link>
+          <Link to="/report">{t('footer.feedback')}</Link>
         </div>
       </div>
       <div className="footer-bottom">

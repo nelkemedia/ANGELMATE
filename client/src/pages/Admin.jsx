@@ -7,6 +7,22 @@ import { toLocaleTag } from '../utils/locale';
 export default function Admin() {
   const { t } = useT();
   const [tab, setTab] = useState('reports');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const tabs = [
+    { id: 'reports', label: t('admin.tab_reports'), icon: '🚩' },
+    { id: 'users', label: t('admin.tab_users'), icon: '👥' },
+    { id: 'smtp', label: t('admin.tab_smtp'), icon: '📧' },
+    { id: 'translations', label: t('admin.tab_translations'), icon: '🌐' },
+    { id: 'emails', label: t('admin.tab_emails'), icon: '✉️' },
+    { id: 'ads', label: 'Werbung', icon: '📢' },
+    { id: 'system', label: 'System', icon: '⚙️' },
+  ];
+
+  function handleTabClick(tabId) {
+    setTab(tabId);
+    setMobileMenuOpen(false);
+  }
 
   return (
     <div className="page">
@@ -15,28 +31,21 @@ export default function Admin() {
         <p className="admin-subtitle">{t('admin.subtitle')}</p>
       </div>
 
-      <div className="community-tabs">
-        <button className={`community-tab ${tab === 'reports'      ? 'community-tab-active' : ''}`} onClick={() => setTab('reports')}>
-          🚩 {t('admin.tab_reports')}
+      <div className="admin-tabs-wrapper">
+        <button className="admin-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
+          {mobileMenuOpen ? '✕' : '☰'}
         </button>
-        <button className={`community-tab ${tab === 'users'        ? 'community-tab-active' : ''}`} onClick={() => setTab('users')}>
-          👥 {t('admin.tab_users')}
-        </button>
-        <button className={`community-tab ${tab === 'smtp'         ? 'community-tab-active' : ''}`} onClick={() => setTab('smtp')}>
-          📧 {t('admin.tab_smtp')}
-        </button>
-        <button className={`community-tab ${tab === 'translations' ? 'community-tab-active' : ''}`} onClick={() => setTab('translations')}>
-          🌐 {t('admin.tab_translations')}
-        </button>
-        <button className={`community-tab ${tab === 'emails' ? 'community-tab-active' : ''}`} onClick={() => setTab('emails')}>
-          ✉️ {t('admin.tab_emails')}
-        </button>
-        <button className={`community-tab ${tab === 'ads' ? 'community-tab-active' : ''}`} onClick={() => setTab('ads')}>
-          📢 Werbung
-        </button>
-        <button className={`community-tab ${tab === 'system' ? 'community-tab-active' : ''}`} onClick={() => setTab('system')}>
-          ⚙️ System
-        </button>
+        <div className={`admin-tabs ${mobileMenuOpen ? 'admin-tabs-mobile-open' : ''}`}>
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              className={`community-tab ${tab === t.id ? 'community-tab-active' : ''}`}
+              onClick={() => handleTabClick(t.id)}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {tab === 'reports'      && <ReportsTab />}

@@ -29,6 +29,12 @@ export const KEYS = [
   { key:'footer.guidelines', de:'Verhaltensregeln',  en:'Guidelines',     fr:'Règles de conduite' },
   { key:'footer.report',     de:'Melden',            en:'Report',         fr:'Signaler' },
   { key:'footer.privacy',    de:'Datenschutz',       en:'Privacy Policy', fr:'Confidentialité' },
+  { key:'footer.about',         de:'Über uns',                    en:'About Us',                     fr:'À propos' },
+  { key:'footer.contact',       de:'Kontakt',                     en:'Contact',                     fr:'Contact' },
+  { key:'footer.help',          de:'Hilfe & Support',             en:'Help & Support',              fr:'Aide & Support' },
+  { key:'footer.feedback',      de:'Feedback',                    en:'Feedback',                    fr:'Retours' },
+  { key:'footer.tagline_line1', de:'Dein digitaler Begleiter am Wasser.', en:'Your digital fishing companion.', fr:'Votre compagnon de pêche numérique.' },
+  { key:'footer.tagline_line2', de:'Für Angler. Für die Natur.',  en:'For anglers. For nature.',    fr:'Pour les pêcheurs. Pour la nature.' },
 
   // ── skill ─────────────────────────────────────────────────────────────────
   { key:'skill.beginner',     de:'Anfänger',        en:'Beginner',      fr:'Débutant' },
