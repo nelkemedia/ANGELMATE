@@ -4,6 +4,7 @@ import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import PhotoLightbox from '../components/PhotoLightbox';
 import AdSlot from '../components/AdSlot';
+import HeroWave from '../components/HeroWave';
 
 function useLockBody(active) {
   useEffect(() => {
@@ -153,6 +154,7 @@ export default function Catches() {
           <h2>📖 {t('catches.title')}</h2>
           <p>{t('catches.subtitle')}</p>
         </div>
+        <HeroWave />
       </div>
       <div className="page">
         <AdSlot position="CATCHES_TOP" />

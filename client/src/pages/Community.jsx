@@ -9,6 +9,7 @@ import AdSlot from '../components/AdSlot';
 import AdBanner from '../components/AdBanner';
 import AdCard from '../components/AdCard';
 import PhotoLightbox from '../components/PhotoLightbox';
+import HeroWave from '../components/HeroWave';
 
 const SKILL_EMOJI = { beginner: '🐣', intermediate: '🎯', advanced: '🏆' };
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -24,6 +25,7 @@ export default function Community() {
           <h2>🌍 {t('community.title')}</h2>
           <p>{t('community.subtitle')}</p>
         </div>
+        <HeroWave />
       </div>
 
       <div className="page">

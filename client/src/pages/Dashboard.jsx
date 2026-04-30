@@ -6,16 +6,7 @@ import { useT } from '../context/TranslationContext';
 import { toLocaleTag } from '../utils/locale';
 import PhotoLightbox from '../components/PhotoLightbox';
 import AdSlot from '../components/AdSlot';
-
-function HeroWave() {
-  return (
-    <div className="hero-wave">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 56" preserveAspectRatio="none">
-        <path d="M0,28 C360,56 720,0 1080,28 C1260,42 1360,14 1440,28 L1440,56 L0,56 Z" fill="#f8fafb" />
-      </svg>
-    </div>
-  );
-}
+import HeroWave from '../components/HeroWave';
 
 
 function IconCalendar() {
@@ -172,19 +163,19 @@ export default function Dashboard() {
           <Link to="/catches" className="quick-link ql-catches">
             <div className="quick-link-content">
               <strong>{t('nav.catches')}</strong>
-              <span>Deine Fänge im Überblick</span>
+              <span>{t('dashboard.catches_desc')}</span>
             </div>
           </Link>
           <Link to="/spots" className="quick-link ql-spots">
             <div className="quick-link-content">
               <strong>{t('nav.spots_full')}</strong>
-              <span>Die besten Plätze finden</span>
+              <span>{t('dashboard.spots_desc')}</span>
             </div>
           </Link>
           <Link to="/forecast" className="quick-link ql-forecast">
             <div className="quick-link-content">
               <strong>{t('nav.forecast')}</strong>
-              <span>Aktuelle Beißaktivität</span>
+              <span>{t('dashboard.forecast_desc')}</span>
             </div>
           </Link>
         </div>
@@ -192,7 +183,7 @@ export default function Dashboard() {
         <Link to="/community" className="community-banner">
           <div className="community-banner-content">
             <h3>{t('nav.community')}</h3>
-            <p>Tausche dich mit anderen Anglern aus</p>
+            <p>{t('dashboard.community_desc')}</p>
           </div>
         </Link>
 

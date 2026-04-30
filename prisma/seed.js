@@ -106,6 +106,10 @@ const KEYS = [
   { key:'dashboard.show_all',       de:'Alle anzeigen',               en:'Show all',                    fr:'Tout afficher' },
   { key:'dashboard.empty_catches',  de:'Noch keine Fänge eingetragen.', en:'No catches logged yet.',    fr:'Aucune prise enregistrée.' },
   { key:'dashboard.add_first_catch',de:'Ersten Fang eintragen',       en:'Log first catch',             fr:'Enregistrer la première prise' },
+  { key:'dashboard.catches_desc',   de:'Deine Fänge im Überblick',    en:'Your catches at a glance',    fr:'Vos prises en un coup d\'œil' },
+  { key:'dashboard.spots_desc',     de:'Die besten Plätze finden',    en:'Find the best spots',         fr:'Trouvez les meilleurs spots' },
+  { key:'dashboard.forecast_desc',  de:'Aktuelle Beißaktivität',      en:'Current bite activity',       fr:'Activité actuelle des morsures' },
+  { key:'dashboard.community_desc', de:'Tausche dich mit anderen Anglern aus', en:'Connect with other anglers', fr:'Connectez-vous avec d\'autres pêcheurs' },
 
   // ── catches ───────────────────────────────────────────────────────────────
   { key:'catches.title',            de:'Fangbuch',                    en:'Catch Log',                   fr:'Journal de pêche' },
