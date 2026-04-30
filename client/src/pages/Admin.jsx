@@ -33,7 +33,7 @@ export default function Admin() {
 
       <div className="admin-tabs-wrapper">
         <button className="admin-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Menu">
-          {mobileMenuOpen ? '✕' : '☰'}
+          {mobileMenuOpen ? '✕' : '☰'} 
         </button>
         <div className={`admin-tabs ${mobileMenuOpen ? 'admin-tabs-mobile-open' : ''}`}>
           {tabs.map(t => (

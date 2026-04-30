@@ -3,6 +3,7 @@ import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useT } from '../context/TranslationContext';
 import AdSlot from '../components/AdSlot';
+import HeroWave from '../components/HeroWave';
 
 function useLockBody(active) {
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function Spots() {
           <h2>📍 {t('spots.title')}</h2>
           <p>{t('spots.subtitle')}</p>
         </div>
+        <HeroWave />
       </div>
       <div className="page">
         <AdSlot position="SPOTS_TOP" />

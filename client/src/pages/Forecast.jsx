@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../api/client';
 import { useT } from '../context/TranslationContext';
 import AdSlot from '../components/AdSlot';
+import HeroWave from '../components/HeroWave';
 
 const LEVEL_CONFIG = {
   excellent: { color: '#16a34a', bg: '#dcfce7', border: '#86efac' },
@@ -124,6 +125,7 @@ export default function Forecast() {
           <h2>🤖 {t('forecast.title')}</h2>
           <p>{t('forecast.subtitle')}</p>
         </div>
+        <HeroWave />
       </div>
 
       <div className="page">
