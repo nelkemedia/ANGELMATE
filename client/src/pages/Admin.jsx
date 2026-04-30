@@ -34,6 +34,9 @@ export default function Admin() {
         <button className={`community-tab ${tab === 'ads' ? 'community-tab-active' : ''}`} onClick={() => setTab('ads')}>
           📢 Werbung
         </button>
+        <button className={`community-tab ${tab === 'system' ? 'community-tab-active' : ''}`} onClick={() => setTab('system')}>
+          ⚙️ System
+        </button>
       </div>
 
       {tab === 'reports'      && <ReportsTab />}
@@ -42,6 +45,7 @@ export default function Admin() {
       {tab === 'translations' && <TranslationsTab />}
       {tab === 'emails'       && <EmailTemplatesTab />}
       {tab === 'ads'          && <AdsTab />}
+      {tab === 'system'       && <SeedTab />}
     </div>
   );
 }
@@ -1252,6 +1256,60 @@ function EmailTemplatesTab() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── System Tab (Seeds) ────────────────────────────────────────────────────────
+
+function SeedTab() {
+  const { t } = useT();
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  async function handleRunSeed() {
+    setBusy(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const result = await api.admin.runSeed();
+      const parts = [];
+      if (result.newUsers > 0) parts.push(`${result.newUsers} Nutzer`);
+      if (result.newTranslations > 0) parts.push(`${result.newTranslations} Übersetzungen`);
+      if (result.newTemplates > 0) parts.push(`${result.newTemplates} E-Mail-Templates`);
+
+      if (parts.length > 0) {
+        setMessage(`✅ ${parts.join(', ')} wurden angelegt.`);
+      } else {
+        setMessage('✅ Alle Daten sind bereits vorhanden.');
+      }
+    } catch (e) {
+      setError(`❌ Fehler: ${e.message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="admin-section">
+      <h3>🌱 Datenbank Seeds</h3>
+      <p style={{ marginBottom: '24px', color: '#666' }}>
+        Führe die Standard-Seeds aus, um Demo-Nutzer, Übersetzungen und E-Mail-Templates zu erstellen.
+        Existierende Einträge werden übersprungen.
+      </p>
+
+      <button
+        className="btn-primary"
+        onClick={handleRunSeed}
+        disabled={busy}
+        style={{ marginBottom: '16px' }}
+      >
+        {busy ? '⏳ Wird ausgeführt...' : '🚀 Seeds einlesen'}
+      </button>
+
+      {message && <p className="success-msg" style={{ marginTop: '16px' }}>{message}</p>}
+      {error && <p className="error-msg" style={{ marginTop: '16px' }}>{error}</p>}
     </div>
   );
 }

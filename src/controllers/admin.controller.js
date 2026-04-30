@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import prisma from '../config/prisma.js';
 import { catchAsync } from '../utils/catch-async.js';
 import { AppError } from '../utils/app-error.js';
@@ -173,4 +174,66 @@ export const updateUserRole = catchAsync(async (req, res) => {
   }).catch(() => { throw new AppError('Nutzer nicht gefunden.', 404); });
 
   res.json({ user });
+});
+
+// ── Database Seeding ──────────────────────────────────────────────────────────
+
+export const runSeed = catchAsync(async (_req, res) => {
+  const { KEYS, EMAIL_TEMPLATES, SEED_USERS } = await import('../../prisma/seed-data.js');
+
+  let newUsers = 0;
+  let newTranslations = 0;
+  let newTemplates = 0;
+
+  // Seed demo users
+  for (const userData of SEED_USERS) {
+    const existing = await prisma.user.findUnique({ where: { email: userData.email } });
+    if (!existing) {
+      const passwordHash = await bcrypt.hash(userData.password, 12);
+      await prisma.user.create({
+        data: {
+          name: userData.name,
+          email: userData.email,
+          passwordHash,
+          homeRegion: userData.homeRegion,
+          skillLevel: userData.skillLevel,
+          role: userData.role || 'USER'
+        }
+      });
+      newUsers++;
+
+      const user = await prisma.user.findUnique({ where: { email: userData.email } });
+      await prisma.userStatus.create({
+        data: { userId: user.id, status: 'ACTIVE' }
+      }).catch(() => {});
+    }
+  }
+
+  // Seed translations
+  const translationsBefore = await prisma.translation.count();
+  const rows = KEYS.flatMap((k) =>
+    ['de', 'en', 'fr'].map((l) => ({ locale: l, key: k.key, value: k[l] }))
+  );
+  await prisma.translation.createMany({ data: rows, skipDuplicates: true });
+  const translationsAfter = await prisma.translation.count();
+  newTranslations = translationsAfter - translationsBefore;
+
+  // Seed email templates
+  for (const template of EMAIL_TEMPLATES) {
+    const existing = await prisma.emailTemplate.findUnique({
+      where: { name_locale: { name: template.name, locale: template.locale } }
+    }).catch(() => null);
+    if (!existing) {
+      await prisma.emailTemplate.create({ data: template });
+      newTemplates++;
+    }
+  }
+
+  res.json({
+    success: true,
+    newUsers,
+    newTranslations,
+    newTemplates,
+    message: `${newUsers} Nutzer, ${newTranslations} Übersetzungen, ${newTemplates} E-Mail-Templates angelegt.`
+  });
 });

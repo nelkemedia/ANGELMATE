@@ -4,7 +4,7 @@ import { requireAdmin } from '../middleware/admin.middleware.js';
 import {
   getReports, resolveReport, deleteReport,
   getUsers, setUserStatus, updateUserRole, deleteUser, sendUserPasswordReset,
-  getSmtp, saveSmtp, testSmtp
+  getSmtp, saveSmtp, testSmtp, runSeed
 } from '../controllers/admin.controller.js';
 import { getAllTranslations, upsertTranslation, deleteTranslation } from '../controllers/translations.controller.js';
 import { getEmailTemplates, upsertEmailTemplate, deleteEmailTemplate } from '../controllers/emailTemplates.controller.js';
@@ -34,5 +34,7 @@ router.delete('/translations/:key', deleteTranslation);
 router.get('/email-templates',          getEmailTemplates);
 router.put('/email-templates',          upsertEmailTemplate);
 router.delete('/email-templates/:name', deleteEmailTemplate);
+
+router.post('/seed', runSeed);
 
 export default router;

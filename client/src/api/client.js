@@ -113,7 +113,8 @@ export const api = {
     deleteTranslation:    (key)        => request(`/admin/translations/${encodeURIComponent(key)}`, { method: 'DELETE' }),
     getEmailTemplates:    ()           => request('/admin/email-templates'),
     upsertEmailTemplate:  (body)       => request('/admin/email-templates',    { method: 'PUT',    body: JSON.stringify(body) }),
-    deleteEmailTemplate:  (name)       => request(`/admin/email-templates/${encodeURIComponent(name)}`, { method: 'DELETE' })
+    deleteEmailTemplate:  (name)       => request(`/admin/email-templates/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    runSeed:              ()           => request('/admin/seed', { method: 'POST' })
   },
   leaderboard: {
     get: (scope = 'national', metric = 'catches') =>
